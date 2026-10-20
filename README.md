@@ -14,8 +14,8 @@ Você precisa de **Python 3.10 a 3.13** (recomendado 3.12) e **Git**.
 
 ```bash
 # 1. Baixar o projeto
-git clone https://github.com/brenoferreirasouto-lgtm/solution-for-all.git
-cd solution-for-all
+git clone https://github.com/brenoferreirasouto-lgtm/Solution-for-all.git
+cd Solution-for-all
 
 # 2. Criar e ativar o ambiente virtual
 python -m venv .venv
@@ -69,7 +69,7 @@ Os testes também rodam sozinhos no GitHub (aba **Actions**) a cada push e pull 
 ## Estrutura
 
 ```
-solution-for-all/
+Solution-for-all/
 ├── config/              # settings.py e urls.py do projeto
 ├── apps/
 │   ├── core/            # código comum: permissões, menu, página "em construção", popular_demo
