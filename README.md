@@ -10,7 +10,7 @@ Projeto da cadeira **Projetos 1** (Sistemas de Informação, CESAR School), Grup
 
 ## Como rodar pela primeira vez
 
-Você precisa de **Python 3.10 a 3.13** (recomendado 3.12) e **Git**.
+Você precisa de **Python 3.10 a 3.14** (recomendado 3.12) e **Git**. Não há link público ainda: o app roda no seu computador.
 
 ```bash
 # 1. Baixar o projeto
@@ -18,9 +18,11 @@ git clone https://github.com/brenoferreirasouto-lgtm/Solution-for-all.git
 cd Solution-for-all
 
 # 2. Criar e ativar o ambiente virtual
-python -m venv .venv
+python3 -m venv .venv            # Mac/Linux
 source .venv/bin/activate        # Mac/Linux
+# python -m venv .venv           # Windows
 # .venv\Scripts\activate         # Windows (PowerShell ou CMD)
+# Com o ambiente ativado, o comando "python" funciona em todos os sistemas.
 
 # 3. Instalar as dependências
 pip install -r requirements.txt
@@ -37,7 +39,9 @@ python manage.py popular_demo
 python manage.py runserver
 ```
 
-Abra <http://127.0.0.1:8000> e entre com um dos usuários abaixo.
+Deixe o terminal aberto, abra <http://127.0.0.1:8000> no navegador e entre com um dos usuários abaixo. Para parar o servidor, aperte `Ctrl + C` no terminal.
+
+Da próxima vez, basta entrar na pasta, ativar o ambiente (passo 2, só a linha `activate`) e rodar o passo 6.
 
 ### Usuários de demonstração
 
