@@ -1,0 +1,24 @@
+{% extends layout %}
+{# Página genérica da entrega 1. Cada entrega troca esta página pela tela de verdade. #}
+
+{% block conteudo %}
+<div class="pagina">
+  {% if saudacao %}
+    <p class="pagina__saudacao">{{ saudacao }} <span class="asterisco" aria-hidden="true">✳</span></p>
+  {% endif %}
+  <h1 class="pagina__titulo">{{ titulo }}</h1>
+  {% if subtitulo %}<p class="pagina__subtitulo">{{ subtitulo }}</p>{% endif %}
+
+  <section class="em-construcao" aria-labelledby="status-tela">
+    <span class="selo" id="status-tela">Em construção</span>
+    {% if entrega %}
+      <p>Esta tela será construída na <strong>entrega #{{ entrega.numero }}</strong>: {{ entrega.titulo }}.</p>
+    {% else %}
+      <p>Esta tela ainda não tem entrega no cronograma.</p>
+    {% endif %}
+    {% if papeis_com_acesso %}
+      <p class="em-construcao__acesso">Quem acessa: {{ papeis_com_acesso|join:", " }}</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

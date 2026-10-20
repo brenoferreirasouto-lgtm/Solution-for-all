@@ -1,0 +1,21 @@
+{% extends "layouts/auth.html" %}
+
+{% block titulo_pagina %}Entrar · Solution for All{% endblock %}
+
+{% block conteudo %}
+<h1 class="acesso__titulo">Bem-vindo de volta</h1>
+<p class="acesso__subtitulo">Acesse sua área de aprendizagem.</p>
+
+<form method="post" class="formulario" novalidate>
+  {% csrf_token %}
+  {% if form.non_field_errors %}
+    <p class="aviso aviso--erro" role="alert">{{ form.non_field_errors|join:" " }}</p>
+  {% endif %}
+  {% include "partials/_campo.html" with campo=form.username %}
+  {% include "partials/_campo.html" with campo=form.password %}
+  <input type="hidden" name="next" value="{{ next }}">
+  <button class="botao botao--primario botao--largo" type="submit">Entrar</button>
+</form>
+
+<p class="acesso__link"><a href="{% url 'contas:senha_recuperar' %}">Esqueceu sua senha?</a></p>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{# Telas sem menu: entrar, recuperar senha, privacidade. #}
+
+{% block body_class %}tela-acesso{% endblock %}
+
+{% block corpo %}
+<main id="conteudo" class="acesso" tabindex="-1">
+  <div class="acesso__cartao">
+    {% include "partials/_marca.html" %}
+    {% include "partials/_mensagens.html" %}
+    {% block conteudo %}{% endblock %}
+  </div>
+  <p class="acesso__rodape"><a href="{% url 'core:privacidade' %}">Privacidade e dados</a></p>
+</main>
+{% endblock %}

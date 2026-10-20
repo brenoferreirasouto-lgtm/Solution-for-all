@@ -1,0 +1,548 @@
+/*
+  Solution for All · estilos base
+  Mobile-first: tudo é pensado para o celular; a partir de 1024 px o menu ☰
+  vira barra lateral. Cores medidas no protótipo; o verde foi escurecido de
+  #1C8874 para #17705F para o texto branco passar no contraste (WCAG AA).
+*/
+
+/* Tokens ------------------------------------------------------------------ */
+:root {
+  --cor-primaria: #17705f;
+  --cor-primaria-escura: #0f5548;
+  --cor-primaria-clara: #e3f1ee;
+  --cor-texto: #1a272b;
+  --cor-texto-suave: #55656a;
+  --cor-borda: #dee4e6;
+  --cor-fundo: #f8fafa;
+  --cor-superficie: #ffffff;
+  --cor-destaque: #d97d71; /* só decorativo: não usar em texto */
+  --cor-erro: #b42318;
+  --cor-erro-fundo: #fdecea;
+  --cor-aviso-fundo: #fff6e5;
+
+  --fonte: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --raio: 12px;
+  --raio-pequeno: 8px;
+  --altura-toque: 44px;
+  --largura-conteudo: 960px;
+  --largura-menu: 248px;
+}
+
+/* Base -------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--fonte);
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--cor-texto);
+  background: var(--cor-fundo);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--cor-primaria);
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.25;
+}
+
+:focus-visible {
+  outline: 3px solid var(--cor-primaria);
+  outline-offset: 2px;
+}
+
+main:focus {
+  outline: none;
+}
+
+.pular {
+  position: absolute;
+  left: -9999px;
+  top: 8px;
+  z-index: 100;
+  padding: 8px 12px;
+  border-radius: var(--raio-pequeno);
+  background: var(--cor-superficie);
+}
+
+.pular:focus {
+  left: 16px;
+}
+
+/* Marca ------------------------------------------------------------------- */
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--altura-toque);
+  color: var(--cor-texto);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.marca__logo {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--raio-pequeno);
+  background: var(--cor-primaria);
+  color: #fff;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+/* Botões e formulários ---------------------------------------------------- */
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--altura-toque);
+  padding: 0 20px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.botao--primario {
+  background: var(--cor-primaria);
+  color: #fff;
+}
+
+.botao--primario:hover {
+  background: var(--cor-primaria-escura);
+}
+
+.botao--secundario {
+  background: var(--cor-superficie);
+  border-color: var(--cor-primaria);
+  color: var(--cor-primaria);
+}
+
+.botao--secundario:hover {
+  background: var(--cor-primaria-clara);
+}
+
+.botao--largo {
+  width: 100%;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.campo label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.campo input,
+.campo select,
+.campo textarea {
+  width: 100%;
+  min-height: var(--altura-toque);
+  padding: 10px 12px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-pequeno);
+  background: var(--cor-superficie);
+  color: inherit;
+  font: inherit;
+}
+
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus {
+  border-color: var(--cor-primaria);
+}
+
+.campo--erro input,
+.campo--erro select,
+.campo--erro textarea {
+  border-color: var(--cor-erro);
+}
+
+.campo__ajuda {
+  margin: 6px 0 0;
+  color: var(--cor-texto-suave);
+  font-size: 0.875rem;
+}
+
+.campo__erro {
+  margin: 6px 0 0;
+  color: var(--cor-erro);
+  font-size: 0.875rem;
+}
+
+/* Avisos (mensagens do Django) -------------------------------------------- */
+.avisos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.aviso {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-pequeno);
+  background: var(--cor-superficie);
+}
+
+.aviso--sucesso {
+  background: var(--cor-primaria-clara);
+  border-color: #b9dcd4;
+}
+
+.aviso--info {
+  background: #eef4f6;
+}
+
+.aviso--aviso {
+  background: var(--cor-aviso-fundo);
+  border-color: #f3dcae;
+}
+
+.aviso--erro {
+  background: var(--cor-erro-fundo);
+  border-color: #f4c7c3;
+  color: var(--cor-erro);
+}
+
+/* Telas de acesso (layouts/auth.html) ------------------------------------- */
+.acesso {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px 16px;
+}
+
+.acesso__cartao {
+  width: 100%;
+  max-width: 400px;
+  padding: 32px 24px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 16px;
+  background: var(--cor-superficie);
+}
+
+.acesso__titulo {
+  margin: 24px 0 4px;
+  font-size: 1.625rem;
+}
+
+.acesso__subtitulo {
+  margin: 0 0 24px;
+  color: var(--cor-texto-suave);
+}
+
+.acesso__link {
+  margin: 20px 0 0;
+  text-align: center;
+}
+
+.acesso__rodape {
+  margin: 16px 0 0;
+  font-size: 0.875rem;
+}
+
+.acesso .pagina__titulo {
+  margin-top: 24px;
+}
+
+/* Estrutura do app (layouts/app.html) ------------------------------------- */
+.topo {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 60px;
+  padding: 8px 12px 8px 16px;
+  border-bottom: 1px solid var(--cor-borda);
+  background: var(--cor-superficie);
+}
+
+.topo .marca {
+  margin-right: auto;
+}
+
+.topo__voltar,
+.topo__menu,
+.menu__fechar {
+  display: inline-grid;
+  place-items: center;
+  width: var(--altura-toque);
+  height: var(--altura-toque);
+  border: 0;
+  border-radius: var(--raio-pequeno);
+  background: transparent;
+  color: var(--cor-texto);
+  cursor: pointer;
+}
+
+.topo__voltar {
+  margin-left: -10px;
+}
+
+.topo__voltar:hover,
+.topo__menu:hover,
+.menu__fechar:hover {
+  background: var(--cor-fundo);
+}
+
+.conteudo {
+  width: 100%;
+  max-width: var(--largura-conteudo);
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+/* Menu: gaveta no celular ------------------------------------------------- */
+.menu {
+  position: fixed;
+  inset: 0 0 0 auto;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(84vw, 300px);
+  padding: 12px 16px 24px;
+  overflow-y: auto;
+  border-left: 1px solid var(--cor-borda);
+  background: var(--cor-superficie);
+  transform: translateX(100%);
+  visibility: hidden;
+  transition: transform 0.2s ease, visibility 0.2s;
+}
+
+.menu-aberto .menu {
+  transform: none;
+  visibility: visible;
+}
+
+.menu-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgba(26, 39, 43, 0.4);
+}
+
+.menu__cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.menu__usuario {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--raio);
+  background: var(--cor-fundo);
+  line-height: 1.3;
+}
+
+.menu__usuario strong {
+  display: block;
+}
+
+.menu__avatar {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--cor-primaria-clara);
+  color: var(--cor-primaria-escura);
+  font-weight: 700;
+}
+
+.menu__papel {
+  color: var(--cor-texto-suave);
+  font-size: 0.875rem;
+}
+
+.menu__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menu__lista a {
+  display: flex;
+  align-items: center;
+  min-height: var(--altura-toque);
+  padding: 0 12px;
+  border-radius: var(--raio-pequeno);
+  color: var(--cor-texto);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.menu__lista a:hover {
+  background: var(--cor-fundo);
+}
+
+.menu__lista a[aria-current="page"] {
+  background: var(--cor-primaria-clara);
+  color: var(--cor-primaria-escura);
+  font-weight: 700;
+}
+
+.menu__rodape {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--cor-borda);
+}
+
+.menu__sair {
+  width: 100%;
+  min-height: var(--altura-toque);
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--raio-pequeno);
+  background: transparent;
+  color: var(--cor-texto);
+  font: inherit;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu__sair:hover {
+  background: var(--cor-fundo);
+}
+
+.menu__privacidade {
+  padding: 0 12px;
+  font-size: 0.875rem;
+}
+
+/* Páginas ----------------------------------------------------------------- */
+.pagina__saudacao {
+  margin: 0 0 2px;
+  color: var(--cor-texto-suave);
+}
+
+.asterisco {
+  color: var(--cor-destaque);
+}
+
+.pagina__titulo {
+  margin: 0 0 4px;
+  font-size: 1.625rem;
+}
+
+.pagina__subtitulo {
+  margin: 0 0 24px;
+  color: var(--cor-texto-suave);
+}
+
+.em-construcao {
+  padding: 16px;
+  border: 1px dashed #c5d0d3;
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+}
+
+.em-construcao p {
+  margin: 12px 0 0;
+}
+
+.em-construcao__acesso {
+  color: var(--cor-texto-suave);
+  font-size: 0.875rem;
+}
+
+.selo {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--cor-primaria-clara);
+  color: var(--cor-primaria-escura);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+/* Desktop: menu vira barra lateral ---------------------------------------- */
+@media (min-width: 1024px) {
+  .app {
+    display: grid;
+    grid-template-columns: var(--largura-menu) minmax(0, 1fr);
+    min-height: 100vh;
+  }
+
+  .menu {
+    position: sticky;
+    top: 0;
+    width: auto;
+    height: 100vh;
+    border-right: 1px solid var(--cor-borda);
+    border-left: 0;
+    transform: none;
+    visibility: visible;
+    transition: none;
+  }
+
+  .menu__fechar,
+  .topo__menu,
+  .menu-fundo {
+    display: none !important;
+  }
+
+  /* No desktop a marca e o menu ficam na barra lateral; o topo só guarda o botão voltar. */
+  .topo {
+    position: static;
+    min-height: 0;
+    padding: 24px 40px 0;
+    border-bottom: 0;
+    background: transparent;
+  }
+
+  .topo .marca {
+    display: none;
+  }
+
+  .topo__voltar {
+    margin-left: -12px;
+  }
+
+  .conteudo {
+    padding: 16px 40px 64px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu {
+    transition: none;
+  }
+}

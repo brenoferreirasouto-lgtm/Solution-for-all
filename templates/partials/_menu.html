@@ -1,0 +1,34 @@
+{# Os itens vêm de apps/core/context_processors.py e mudam pelo papel. #}
+<nav id="menu" class="menu" aria-label="Menu principal">
+  <div class="menu__cabecalho">
+    {% include "partials/_marca.html" %}
+    <button class="menu__fechar" type="button" aria-label="Fechar menu" data-menu-fechar>
+      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+
+  <div class="menu__usuario">
+    <span class="menu__avatar" aria-hidden="true">{{ user.nome|slice:":1"|upper }}</span>
+    <span>
+      <strong>{{ user.nome }}</strong>
+      <span class="menu__papel">{{ user.get_papel_display }}</span>
+    </span>
+  </div>
+
+  <ul class="menu__lista">
+    {% for item in menu_itens %}
+      <li><a href="{{ item.url }}"{% if item.atual %} aria-current="page"{% endif %}>{{ item.rotulo }}</a></li>
+    {% endfor %}
+    {% if mostrar_catalogos %}
+      <li><a href="{% url 'admin:index' %}">Catálogos</a></li>
+    {% endif %}
+  </ul>
+
+  <div class="menu__rodape">
+    <form method="post" action="{% url 'contas:sair' %}">
+      {% csrf_token %}
+      <button class="menu__sair" type="submit">Sair</button>
+    </form>
+    <a class="menu__privacidade" href="{% url 'core:privacidade' %}">Privacidade e dados</a>
+  </div>
+</nav>

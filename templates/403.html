@@ -1,0 +1,9 @@
+{% extends "layouts/auth.html" %}
+
+{% block titulo_pagina %}Acesso negado · Solution for All{% endblock %}
+
+{% block conteudo %}
+<h1 class="acesso__titulo">Acesso negado</h1>
+<p class="acesso__subtitulo">Seu papel não tem acesso a esta tela.</p>
+<a class="botao botao--secundario botao--largo" href="{% url 'painel:inicio' %}">Voltar ao início</a>
+{% endblock %}

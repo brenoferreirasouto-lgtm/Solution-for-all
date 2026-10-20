@@ -1,0 +1,17 @@
+{% load static %}<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo_pagina %}{% if titulo %}{{ titulo }} · {% endif %}Solution for All{% endblock %}</title>
+  <link rel="icon" href="{% static 'img/logo.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+  {% block corpo %}{% endblock %}
+  <script src="{% static 'js/menu.js' %}" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,7 @@
+{# Uso: {% include "partials/_campo.html" with campo=form.email %} #}
+<div class="campo{% if campo.errors %} campo--erro{% endif %}">
+  <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+  {{ campo }}
+  {% if campo.help_text %}<p class="campo__ajuda">{{ campo.help_text }}</p>{% endif %}
+  {% for erro in campo.errors %}<p class="campo__erro">{{ erro }}</p>{% endfor %}
+</div>

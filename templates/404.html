@@ -1,0 +1,9 @@
+{% extends "layouts/auth.html" %}
+
+{% block titulo_pagina %}Página não encontrada · Solution for All{% endblock %}
+
+{% block conteudo %}
+<h1 class="acesso__titulo">Página não encontrada</h1>
+<p class="acesso__subtitulo">O endereço não existe ou você não tem acesso a este registro.</p>
+<a class="botao botao--secundario botao--largo" href="{% url 'painel:inicio' %}">Voltar ao início</a>
+{% endblock %}

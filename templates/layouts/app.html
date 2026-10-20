@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{# Todas as telas de quem está logado: topo + menu (☰ no celular, barra lateral no desktop). #}
+
+{% block body_class %}tela-app{% endblock %}
+
+{% block corpo %}
+<div class="app">
+  {% include "partials/_menu.html" %}
+  <div class="app__principal">
+    {% include "partials/_topbar.html" %}
+    <main id="conteudo" class="conteudo" tabindex="-1">
+      {% include "partials/_mensagens.html" %}
+      {% block conteudo %}{% endblock %}
+    </main>
+  </div>
+</div>
+<div class="menu-fundo" data-menu-fechar hidden></div>
+{% endblock %}
