@@ -493,6 +493,179 @@ main:focus {
   font-weight: 600;
 }
 
+/* Documentos (Termos de Uso, Política de Privacidade) --------------------- */
+/* Texto base de 16 px (12 pt), o mínimo do CDC para contratos de adesão. */
+.doc-topo {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--cor-borda);
+  background: var(--cor-superficie);
+}
+
+.documento {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px 16px 64px;
+}
+
+.documento h1 {
+  margin: 0 0 8px;
+  font-size: 1.875rem;
+}
+
+.documento h2 {
+  margin: 40px 0 12px;
+  font-size: 1.25rem;
+  scroll-margin-top: 80px;
+}
+
+.documento h3 {
+  margin: 24px 0 8px;
+  font-size: 1.0625rem;
+}
+
+.documento p,
+.documento li {
+  line-height: 1.65;
+}
+
+.documento ul {
+  padding-left: 1.25rem;
+}
+
+.documento li + li {
+  margin-top: 6px;
+}
+
+.documento__versao {
+  margin: 0 0 16px;
+  color: var(--cor-texto-suave);
+}
+
+.documento__aviso {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid #f3dcae;
+  border-radius: var(--raio-pequeno);
+  background: var(--cor-aviso-fundo);
+  font-size: 0.9375rem;
+}
+
+.sumario {
+  margin: 24px 0 8px;
+  padding: 16px 20px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+}
+
+.sumario h2 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.sumario ol {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.sumario li + li {
+  margin-top: 2px;
+}
+
+.a-definir {
+  padding: 0 4px;
+  border: 1px dashed #c9a43a;
+  border-radius: 4px;
+  background: #fff1c2;
+  color: inherit;
+}
+
+/* CDC art. 54, § 4º: cláusulas que limitam direitos ficam em destaque. */
+.clausula-limite {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border-left: 4px solid #b5482f;
+  border-radius: 0 var(--raio-pequeno) var(--raio-pequeno) 0;
+  background: #fbefec;
+}
+
+.clausula-limite__rotulo {
+  display: block;
+  margin-bottom: 4px;
+  color: #8f3520;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.clausula-limite p,
+.clausula-limite ul {
+  margin: 0;
+}
+
+.clausula-limite p + p,
+.clausula-limite p + ul {
+  margin-top: 8px;
+}
+
+.documento__rodape {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--cor-borda);
+}
+
+.documento__rodape p {
+  margin: 0;
+}
+
+.acesso__aceite {
+  margin: 16px 0 0;
+  color: var(--cor-texto-suave);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.acesso__rodape a + a {
+  margin-left: 16px;
+}
+
+@media (min-width: 768px) {
+  .sumario ol {
+    columns: 2;
+    column-gap: 32px;
+  }
+}
+
+@media print {
+  .doc-topo,
+  .documento__rodape .botao,
+  .pular {
+    display: none;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .documento {
+    max-width: none;
+    padding: 0;
+  }
+}
+
 /* Desktop: menu vira barra lateral ---------------------------------------- */
 @media (min-width: 1024px) {
   .app {

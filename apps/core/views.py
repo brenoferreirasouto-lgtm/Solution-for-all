@@ -13,6 +13,7 @@ from django.views.generic import TemplateView
 
 from apps.contas.models import Papel
 
+from . import documentos
 from .entregas import entrega as dados_da_entrega
 from .permissoes import PapelRequeridoMixin
 
@@ -72,8 +73,24 @@ class AcaoEmConstrucao(PapelRequeridoMixin, View):
         return redirect(self.destino)
 
 
-class PrivacidadeView(PaginaEmConstrucao):
-    publica = True
-    titulo = "Privacidade e dados"
-    subtitulo = "Como o Solution for All protege os dados dos estudantes."
-    entrega = 11
+class DocumentoLegalView(TemplateView):
+    """Páginas públicas de leitura: abrem sem login."""
+
+    documento = None  # dicionário de apps/core/documentos.py
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        contexto.update(titulo=self.titulo, versao=self.documento["versao"], atualizado_em=self.documento["atualizado_em"])
+        return contexto
+
+
+class PrivacidadeView(DocumentoLegalView):
+    template_name = "core/privacidade.html"
+    titulo = "Política de Privacidade"
+    documento = documentos.POLITICA_DE_PRIVACIDADE
+
+
+class TermosView(DocumentoLegalView):
+    template_name = "core/termos.html"
+    titulo = "Termos de Uso"
+    documento = documentos.TERMOS_DE_USO

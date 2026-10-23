@@ -1,0 +1,242 @@
+{% extends "layouts/documento.html" %}
+{# Texto de origem: Documents/Solution_For_All_Termos_de_Uso.pdf. Mudou o texto? Atualize a versão em apps/core/documentos.py. #}
+
+{% block documento %}
+<nav class="sumario" aria-labelledby="sumario-termos">
+  <h2 id="sumario-termos">Sumário</h2>
+  <ol>
+    <li><a href="#aceitacao">Aceitação destes Termos</a></li>
+    <li><a href="#quem-pode-usar">Quem pode usar</a></li>
+    <li><a href="#o-que-e">O que é o Solution For All</a></li>
+    <li><a href="#sua-conta">Sua conta</a></li>
+    <li><a href="#regras">Regras de uso</a></li>
+    <li><a href="#ia">Conteúdo gerado com inteligência artificial</a></li>
+    <li><a href="#propriedade">Seu conteúdo e a propriedade intelectual</a></li>
+    <li><a href="#dados">Dados pessoais</a></li>
+    <li><a href="#disponibilidade">Disponibilidade do serviço</a></li>
+    <li><a href="#planos">Planos e pagamentos</a></li>
+    <li><a href="#responsabilidade">Responsabilidade</a></li>
+    <li><a href="#encerramento">Suspensão e encerramento</a></li>
+    <li><a href="#alteracoes">Alterações nestes Termos</a></li>
+    <li><a href="#foro">Lei aplicável e foro</a></li>
+    <li><a href="#contato">Contato</a></li>
+  </ol>
+</nav>
+
+<section aria-labelledby="aceitacao">
+  <h2 id="aceitacao">1. Aceitação destes Termos</h2>
+  <p>
+    Ao entrar ou usar o Solution For All, você declara que leu e concorda com estes Termos de Uso e com a
+    <a href="{% url 'core:privacidade' %}">Política de Privacidade</a>. Se não concordar, não use a plataforma.
+    O aceite destes Termos não substitui os consentimentos específicos previstos na Política de Privacidade.
+  </p>
+</section>
+
+<section aria-labelledby="quem-pode-usar">
+  <h2 id="quem-pode-usar">2. Quem pode usar</h2>
+  <ul>
+    <li>
+      Profissionais da educação (coordenação, professores e equipe do núcleo psicopedagógico), maiores de 18 anos,
+      vinculados a uma escola parceira. As contas são criadas pela coordenação da escola.
+    </li>
+    <li>Estudantes não criam contas nem acessam a plataforma diretamente.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="o-que-e">
+  <h2 id="o-que-e">3. O que é o Solution For All</h2>
+  <p>
+    O Solution For All é uma plataforma que ajuda professores e equipes de apoio pedagógico a adaptar materiais de
+    ensino às diferentes formas de aprender dos estudantes, com o apoio de recursos de inteligência artificial.
+  </p>
+  <p>
+    A plataforma não é um serviço de saúde: não faz diagnóstico, avaliação clínica nem laudo, e não substitui o
+    julgamento do professor, o trabalho do apoio pedagógico ou o de profissionais de saúde. Os perfis de aprendizagem
+    servem para adaptar materiais, e não para rotular estudantes.
+  </p>
+</section>
+
+<section aria-labelledby="sua-conta">
+  <h2 id="sua-conta">4. Sua conta</h2>
+  <ul>
+    <li>Informe dados verdadeiros e mantenha-os atualizados.</li>
+    <li>
+      Suas credenciais são pessoais e intransferíveis. Não compartilhe sua senha. Se suspeitar de uso indevido da
+      conta, avise imediatamente o contato da plataforma (<mark class="a-definir">e-mail a definir</mark>) e a
+      coordenação da sua escola. O mesmo vale para qualquer acesso indevido a dados de estudantes.
+    </li>
+    <li>A conta é criada pela coordenação da escola, que pode desativá-la ao fim do seu vínculo com a instituição.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="regras">
+  <h2 id="regras">5. Regras de uso</h2>
+  <p>Ao usar a plataforma, você se compromete a:</p>
+  <ul>
+    <li>usar o Solution For All somente para fins pedagógicos e dentro das instruções da sua escola;</li>
+    <li>
+      inserir apenas os dados dos estudantes que forem necessários para adaptar os materiais, e somente de estudantes
+      cujo cadastro a escola tenha autorizado, com o consentimento dos responsáveis quando exigido;
+    </li>
+    <li>
+      não inserir laudos, relatórios clínicos, diagnósticos detalhados, documentos de identificação ou outros dados
+      desnecessários, inclusive em campos de texto livre;
+    </li>
+    <li>manter sigilo sobre as informações dos estudantes e não usá-las para outra finalidade;</li>
+    <li>revisar todo material gerado antes de usá-lo com os estudantes.</li>
+  </ul>
+  <p>É proibido:</p>
+  <ul>
+    <li>compartilhar credenciais de acesso;</li>
+    <li>
+      usar a plataforma para fins ilícitos, discriminatórios ou que exponham os estudantes, inclusive divulgar
+      diagnósticos ou necessidades de aprendizagem a quem não precise conhecê-los;
+    </li>
+    <li>tentar burlar a segurança, acessar dados de outros usuários ou sobrecarregar o sistema;</li>
+    <li>copiar, vender ou fazer engenharia reversa do software, salvo quando a lei permitir;</li>
+    <li>
+      usar a plataforma para tomar decisões automatizadas sobre estudantes, como notas, classificações ou
+      encaminhamentos.
+    </li>
+  </ul>
+</section>
+
+<section aria-labelledby="ia">
+  <h2 id="ia">6. Conteúdo gerado com inteligência artificial</h2>
+  <ul>
+    <li>
+      A inteligência artificial pode errar ou gerar conteúdo impreciso ou inadequado. Por isso, todo material deve ser
+      revisado pelo professor antes do uso. Se encontrar conteúdo inadequado, avise pelo canal
+      <mark class="a-definir">e-mail a definir</mark> para que possamos corrigir.
+    </li>
+    <li>Os materiais gerados são um apoio. A decisão pedagógica é sempre do professor e da escola.</li>
+    <li>
+      Nesta versão do projeto, a adaptação ainda é simulada: o texto gerado é um exemplo, sem uso de provedor externo
+      de inteligência artificial.
+    </li>
+  </ul>
+</section>
+
+<section aria-labelledby="propriedade">
+  <h2 id="propriedade">7. Seu conteúdo e a propriedade intelectual</h2>
+  <ul>
+    <li>
+      O conteúdo que você insere continua sendo seu, da sua escola ou do respectivo titular de direitos. Você declara
+      ter o direito de usá-lo na plataforma. Não insira obras de terceiros (textos, imagens, livros) sem autorização
+      ou base legal para isso, conforme a Lei de Direitos Autorais (Lei nº 9.610/1998).
+    </li>
+    <li>
+      Você nos autoriza, de forma limitada e não exclusiva, a processar esse conteúdo somente para prestar o serviço.
+      Não usamos o conteúdo dos usuários nem dados de estudantes para treinar modelos de IA, a menos que estejam
+      anonimizados.
+    </li>
+    <li>
+      O software, a marca e o design do Solution For All pertencem ao Grupo 7 da cadeira Projetos 1 da CESAR School.
+      Concedemos a você uma licença de uso pessoal, limitada, revogável, não exclusiva e intransferível.
+    </li>
+    <li>Materiais gerados para você: você e sua escola podem usá-los para fins pedagógicos.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="dados">
+  <h2 id="dados">8. Dados pessoais</h2>
+  <p>
+    Tratamos dados pessoais conforme a <a href="{% url 'core:privacidade' %}">Política de Privacidade</a>. Em relação
+    aos dados dos estudantes, a escola é a controladora e o Solution For All atua como operador. O consentimento dos
+    responsáveis, quando necessário, é obtido pela escola.
+  </p>
+  <p>
+    Hoje a plataforma guarda apenas a data do último acesso de cada conta, sem registro de endereço IP nem das ações
+    feitas. Se passar a guardar registros de acesso, eles ficarão em ambiente seguro e sob sigilo, pelo prazo exigido
+    em lei, e só serão fornecidos a terceiros por ordem judicial ou nas hipóteses previstas em lei.
+  </p>
+</section>
+
+<section aria-labelledby="disponibilidade">
+  <h2 id="disponibilidade">9. Disponibilidade do serviço</h2>
+  <p>
+    Trabalhamos para manter a plataforma disponível, mas podem ocorrer interrupções por manutenção, falhas técnicas
+    ou fatores fora do nosso controle. Quando possível, avisaremos sobre manutenções programadas.
+  </p>
+  <div class="clausula-limite">
+    <span class="clausula-limite__rotulo">Cláusula que limita direitos</span>
+    <p>Podemos alterar ou descontinuar recursos, com aviso prévio, sem prejuízo dos seus direitos legais.</p>
+  </div>
+</section>
+
+<section aria-labelledby="planos">
+  <h2 id="planos">10. Planos e pagamentos</h2>
+  <p>O Solution For All é gratuito. Não há planos pagos nem cobrança de nenhum tipo.</p>
+</section>
+
+<section aria-labelledby="responsabilidade">
+  <h2 id="responsabilidade">11. Responsabilidade</h2>
+  <div class="clausula-limite">
+    <span class="clausula-limite__rotulo">Cláusula que limita direitos</span>
+    <ul>
+      <li>
+        Na medida permitida pela lei, não nos responsabilizamos por danos causados por uso em desacordo com estes
+        Termos, por conteúdo inserido pelos usuários ou por decisões pedagógicas tomadas com base nos materiais
+        gerados.
+      </li>
+      <li>
+        Nada nestes Termos exclui ou limita a responsabilidade que a lei não permite excluir ou limitar, inclusive a do
+        fornecedor perante o consumidor por falha na prestação do serviço e a decorrente de dolo ou culpa grave nossa.
+        Nos demais casos, nossa responsabilidade fica limitada aos danos diretos comprovados.
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section aria-labelledby="encerramento">
+  <h2 id="encerramento">12. Suspensão e encerramento</h2>
+  <p>
+    Você pode pedir o encerramento da sua conta a qualquer momento, sem custo, à coordenação da sua escola, que é quem
+    desativa as contas na plataforma.
+  </p>
+  <div class="clausula-limite">
+    <span class="clausula-limite__rotulo">Cláusula que limita direitos</span>
+    <p>
+      Podemos suspender ou encerrar contas que violem estes Termos ou a lei. Sempre que possível, avisaremos o motivo
+      antes e daremos a você a chance de se manifestar, salvo em caso de risco à segurança da plataforma ou dos
+      estudantes.
+    </p>
+  </div>
+  <p>
+    Ao encerrar a conta, você pode pedir a exclusão definitiva dos dados pessoais que forneceu, ressalvadas as
+    hipóteses de guarda obrigatória previstas em lei, como a dos registros de acesso (Marco Civil da Internet,
+    arts. 7º, X, e 15), e as demais condições da Política de Privacidade.
+  </p>
+</section>
+
+<section aria-labelledby="alteracoes">
+  <h2 id="alteracoes">13. Alterações nestes Termos</h2>
+  <p>
+    Podemos atualizar estes Termos. Avisaremos por e-mail ou na plataforma com antecedência de 30 dias. Se você não
+    concordar com a mudança, pode pedir o encerramento da conta sem custo antes de ela entrar em vigor.
+  </p>
+  <div class="clausula-limite">
+    <span class="clausula-limite__rotulo">Cláusula que limita direitos</span>
+    <p>O uso da plataforma depois dessa data vale como aceitação. Mudanças exigidas por lei podem valer imediatamente.</p>
+  </div>
+</section>
+
+<section aria-labelledby="foro">
+  <h2 id="foro">14. Lei aplicável e foro</h2>
+  <p>
+    Estes Termos são regidos pelas leis do Brasil. Fica eleito o foro da comarca de Recife/PE, ressalvado o direito do
+    consumidor de propor ação no foro do seu domicílio, nos termos da lei.
+  </p>
+</section>
+
+<section aria-labelledby="contato">
+  <h2 id="contato">15. Contato</h2>
+  <p>
+    Dúvidas sobre estes Termos: <mark class="a-definir">e-mail a definir</mark> · Grupo 7, Projetos 1, CESAR School.
+    Pedidos sobre dados pessoais devem ser feitos ao encarregado indicado na
+    <a href="{% url 'core:privacidade' %}">Política de Privacidade</a>.
+  </p>
+</section>
+{% endblock %}
+
+{% block veja_tambem %}Veja também a <a href="{% url 'core:privacidade' %}">Política de Privacidade</a>.{% endblock %}

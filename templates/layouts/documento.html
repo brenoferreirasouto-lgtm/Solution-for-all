@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{# Documentos públicos de leitura: Termos de Uso e Política de Privacidade. Abrem sem login. #}
+
+{% block body_class %}tela-documento{% endblock %}
+
+{% block corpo %}
+<header class="doc-topo">
+  {% include "partials/_marca.html" %}
+  {% if user.is_authenticated %}
+    <a class="botao botao--secundario" href="{% url 'painel:painel' %}">Voltar ao app</a>
+  {% else %}
+    <a class="botao botao--secundario" href="{% url 'contas:entrar' %}">Entrar</a>
+  {% endif %}
+</header>
+
+<main id="conteudo" class="documento" tabindex="-1">
+  <article>
+    <header class="documento__cabecalho">
+      <h1>{{ titulo }}</h1>
+      <p class="documento__versao">Última atualização: {{ atualizado_em|date:"d/m/Y" }} · Versão {{ versao }}</p>
+      <p class="documento__aviso">
+        Projeto acadêmico do Grupo 7 da cadeira Projetos 1 (Sistemas de Informação, CESAR School).
+        Este documento ainda não foi revisado por um advogado. Os trechos marcados como
+        <mark class="a-definir">a definir</mark> serão completados pelo grupo.
+      </p>
+    </header>
+
+    {% block documento %}{% endblock %}
+  </article>
+
+  <footer class="documento__rodape">
+    <p>
+      {% block veja_tambem %}{% endblock %}
+    </p>
+    <button class="botao botao--secundario" type="button" onclick="window.print()">Imprimir ou salvar em PDF</button>
+  </footer>
+</main>
+{% endblock %}
