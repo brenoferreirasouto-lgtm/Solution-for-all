@@ -131,7 +131,8 @@ Cada view declara os papéis aceitos (`papeis = COORDENACAO`, `PROFESSOR`, `TODO
 | `/adaptacoes/<id>/` | Material pronto (Ouvir, Refazer, Exportar) | Todos | #8 |
 | `/adaptacoes/<id>/refazer/` (POST) | Gerar nova versão | Professor que criou | #8 |
 | `/adaptacoes/<id>/exportar/` | Página para imprimir ou salvar em PDF | Todos | #8 |
-| `/privacidade/` | Privacidade e dados (LGPD) | Visitante | #11 |
+| `/privacidade/` | Política de Privacidade (versão 1.0) | Visitante | pronta |
+| `/termos/` | Termos de Uso (versão 1.0) | Visitante | pronta |
 | `/admin/` | Catálogos: turmas, disciplinas, necessidades, formatos | Coordenador | pronta |
 
 Nos templates, use sempre o nome da rota (`{% url 'alunos:detalhe' aluno.pk %}`), nunca o caminho escrito à mão.
@@ -151,6 +152,7 @@ Nos templates, use sempre o nome da rota (`{% url 'alunos:detalhe' aluno.pk %}`)
 
 - **Não troque o `AUTH_USER_MODEL`.** O usuário customizado (`contas.Usuario`) já está na primeira migration.
 - **Só dados fictícios.** Necessidades como TEA e TDAH são dados de saúde de crianças (dado sensível pela LGPD).
+- **Termos e Política valem como promessa.** O texto publicado em `/termos/` e `/privacidade/` (em `templates/core/`) descreve o que o app faz hoje. Mudou o comportamento (ex.: passou a guardar logs, ligou uma API de IA, escolheu a hospedagem)? Atualize o texto, a versão e a data em `apps/core/documentos.py`. Os rascunhos originais em PDF estão em `Documents/`.
 - **A IA nunca recebe o nome do aluno.** `apps/materiais/services/ia.py` recebe só o texto do material e o formato. Hoje a IA é simulada; a API gratuita é testada à parte (entrega #2).
 - **Ações que mudam dados usam POST** com `{% csrf_token %}`, nunca um link.
 - **Cores só pelas variáveis** do topo de `static/css/app.css`. O verde `#17705F` passa no contraste com texto branco; o `#1C8874` do protótipo não.

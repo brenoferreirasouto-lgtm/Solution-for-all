@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{# Telas sem menu: entrar, recuperar senha, privacidade. #}
+{# Telas sem menu: entrar e recuperar senha. #}
 
 {% block body_class %}tela-acesso{% endblock %}
 
@@ -10,6 +10,9 @@
     {% include "partials/_mensagens.html" %}
     {% block conteudo %}{% endblock %}
   </div>
-  <p class="acesso__rodape"><a href="{% url 'core:privacidade' %}">Privacidade e dados</a></p>
+  <p class="acesso__rodape">
+    <a href="{% url 'core:privacidade' %}">Política de Privacidade</a>
+    <a href="{% url 'core:termos' %}">Termos de Uso</a>
+  </p>
 </main>
 {% endblock %}

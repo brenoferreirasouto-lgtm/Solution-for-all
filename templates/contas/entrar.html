@@ -17,5 +17,10 @@
   <button class="botao botao--primario botao--largo" type="submit">Entrar</button>
 </form>
 
+<p class="acesso__aceite">
+  Ao entrar, você concorda com os <a href="{% url 'core:termos' %}">Termos de Uso</a>
+  e com a <a href="{% url 'core:privacidade' %}">Política de Privacidade</a>.
+</p>
+
 <p class="acesso__link"><a href="{% url 'contas:senha_recuperar' %}">Esqueceu sua senha?</a></p>
 {% endblock %}

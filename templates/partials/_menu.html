@@ -29,6 +29,7 @@
       {% csrf_token %}
       <button class="menu__sair" type="submit">Sair</button>
     </form>
-    <a class="menu__privacidade" href="{% url 'core:privacidade' %}">Privacidade e dados</a>
+    <a class="menu__privacidade" href="{% url 'core:privacidade' %}">Política de Privacidade</a>
+    <a class="menu__privacidade" href="{% url 'core:termos' %}">Termos de Uso</a>
   </div>
 </nav>

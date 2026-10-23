@@ -76,7 +76,14 @@ ACOES = [
     ("materiais:adaptacao_refazer", {"pk": "adaptacao"}, (P,)),
 ]
 
-PUBLICAS = ["contas:entrar", "contas:senha_recuperar", "contas:senha_codigo", "contas:senha_nova", "core:privacidade"]
+PUBLICAS = [
+    "contas:entrar",
+    "contas:senha_recuperar",
+    "contas:senha_codigo",
+    "contas:senha_nova",
+    "core:privacidade",
+    "core:termos",
+]
 
 
 class RotasTests(EsqueletoTestCase):
@@ -167,6 +174,34 @@ class MenuTests(EsqueletoTestCase):
         resposta = self.client.get(reverse("alunos:detalhe", kwargs={"pk": self.aluno.pk}))
         atuais = [i["rotulo"] for i in resposta.context["menu_itens"] if i["atual"]]
         self.assertEqual(atuais, ["Meus alunos"])
+
+
+class DocumentosLegaisTests(EsqueletoTestCase):
+    def test_documentos_abrem_sem_login_com_versao(self):
+        for rota, titulo in (("core:termos", "Termos de Uso"), ("core:privacidade", "Política de Privacidade")):
+            with self.subTest(rota=rota):
+                resposta = self.client.get(reverse(rota))
+                self.assertContains(resposta, f"<h1>{titulo}</h1>", html=True)
+                self.assertContains(resposta, "Versão 1.0")
+                self.assertContains(resposta, "23/10/2026")
+
+    def test_login_avisa_e_linka_os_documentos(self):
+        resposta = self.client.get(reverse("contas:entrar"))
+        self.assertContains(resposta, "Ao entrar, você concorda com os")
+        self.assertContains(resposta, f'href="{reverse("core:termos")}"')
+        self.assertContains(resposta, f'href="{reverse("core:privacidade")}"')
+
+    def test_menu_linka_os_documentos(self):
+        self.client.force_login(self.professor)
+        resposta = self.client.get(reverse("painel:painel"))
+        self.assertContains(resposta, f'href="{reverse("core:termos")}"')
+        self.assertContains(resposta, f'href="{reverse("core:privacidade")}"')
+
+    def test_documentos_nao_tem_colchetes_do_rascunho(self):
+        for rota in ("core:termos", "core:privacidade"):
+            with self.subTest(rota=rota):
+                texto = self.client.get(reverse(rota)).content.decode()
+                self.assertNotIn("[", texto.split("<article>")[1].split("</article>")[0])
 
 
 class IaSimuladaTests(EsqueletoTestCase):
