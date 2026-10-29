@@ -1,0 +1,45 @@
+{% extends "layouts/app.html" %}
+{# Entregas #3 e #4: a coordenação vê e cadastra toda a equipe. #}
+
+{% block conteudo %}
+<div class="pagina">
+  <h1 class="pagina__titulo">Equipe</h1>
+  <p class="pagina__subtitulo">Coordenadores, professores e membros do núcleo psicopedagógico.</p>
+
+  {% for secao in secoes %}
+    <section class="equipe-secao" aria-labelledby="secao-{{ forloop.counter }}">
+      <div class="equipe-secao__topo">
+        <h2 id="secao-{{ forloop.counter }}">{{ secao.titulo }}</h2>
+        <a class="botao botao--secundario" href="{% url secao.rota_novo %}">{{ secao.rotulo_novo }}</a>
+      </div>
+
+      {% if secao.pessoas %}
+        <ul class="equipe-lista">
+          {% for pessoa in secao.pessoas %}
+            <li class="equipe-item{% if not pessoa.is_active %} equipe-item--inativo{% endif %}">
+              <div class="equipe-item__dados">
+                <strong>{{ pessoa.nome }}</strong>
+                <span>{{ pessoa.email }}</span>
+                {% if not pessoa.is_active %}<span class="selo selo--inativo">Acesso desativado</span>{% endif %}
+              </div>
+              <div class="equipe-item__acoes">
+                <a class="botao botao--secundario" href="{% url 'escola:membro_editar' pessoa.pk %}">Editar</a>
+                {% if pessoa != user %}
+                  <form method="post" action="{% url 'escola:membro_desativar' pessoa.pk %}">
+                    {% csrf_token %}
+                    <button class="botao botao--secundario" type="submit">
+                      {% if pessoa.is_active %}Desativar{% else %}Reativar{% endif %}
+                    </button>
+                  </form>
+                {% endif %}
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="equipe-vazio">Ninguém cadastrado ainda.</p>
+      {% endif %}
+    </section>
+  {% endfor %}
+</div>
+{% endblock %}

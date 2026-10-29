@@ -4,7 +4,7 @@ App web para professores adaptarem materiais didáticos com IA para estudantes n
 
 Projeto da cadeira **Projetos 1** (Sistemas de Informação, CESAR School), Grupo 7: Francisco Costa, Matheus Nader, Breno Souto, José Victor e Victor Poggi.
 
-> **Status: entrega 1 (esqueleto).** O projeto roda, o banco e o login funcionam, e todas as rotas existem. Cada tela mostra "Em construção" e diz qual entrega vai construí-la.
+> **Status: entregas 1, 3 e 4.** O projeto roda, o banco e o login funcionam, e a coordenação já cadastra coordenadores, professores e membros do núcleo (tela **Equipe**). As demais telas ainda mostram "Em construção" e dizem qual entrega vai construí-las.
 
 ---
 
@@ -51,7 +51,7 @@ Todos com a senha `solution123`. Os dados são fictícios (os nomes de alunos s�
 | --- | --- | --- |
 | Coordenador | `coordenacao@escola.com` | Tudo, incluindo Equipe, Horários e Catálogos (`/admin/`) |
 | Professor | `francisco@escola.com` | Os próprios alunos e materiais, e a tela Adaptar material |
-| Núcleo psicopedagógico | `nucleo@escola.com` | Todos os alunos e materiais, sem cadastros |
+| Núcleo psicopedagógico | `nucleo@escola.com` | Todos os alunos e materiais, e os Catálogos (cadastra e edita, sem excluir) |
 
 ---
 
@@ -96,9 +96,11 @@ Ordem de dependência entre os apps: `contas` → `escola` → `alunos` → `mat
 
 | Papel | Pode |
 | --- | --- |
-| Coordenador | Cadastrar professores, membros do núcleo, alunos e horários; ver tudo |
+| Coordenador | Cadastrar coordenadores, professores, membros do núcleo, alunos e horários; ver tudo; Catálogos completos |
 | Professor | Ver os alunos vinculados a ele, adaptar materiais, ver as próprias adaptações |
-| Núcleo psicopedagógico | Acompanhar todos os alunos, materiais e adaptações |
+| Núcleo psicopedagógico | Acompanhar todos os alunos, materiais e adaptações; cadastrar e editar nos Catálogos (alunos, turmas, matérias, necessidades, formatos, horários), sem excluir |
+
+**Catálogos (`/admin/`):** o acesso vem do papel, não de marcar permissões à mão. Quem é coordenador ou núcleo ganha `is_staff` automaticamente ao ser salvo (e perde se mudar para professor), e as permissões de catálogo ficam em `apps/contas/models.py` (`ACOES_CATALOGO`). Para mudar o que cada papel pode fazer lá, edite esse dicionário.
 
 Cada view declara os papéis aceitos (`papeis = COORDENACAO`, `PROFESSOR`, `TODOS`...). Os dados vêm de consultas como `Aluno.objects.visiveis_para(usuario)`: um professor que abrir o id de um aluno que não é dele recebe 404.
 
@@ -117,11 +119,12 @@ Cada view declara os papéis aceitos (`papeis = COORDENACAO`, `PROFESSOR`, `TODO
 | `/alunos/<id>/` | Perfil e histórico do aluno | Todos (professor só os seus) | #5 |
 | `/alunos/<id>/editar/` | Editar aluno | Coordenador | #5 |
 | `/alunos/<id>/arquivar/` (POST) | Arquivar aluno | Coordenador | #5 |
-| `/equipe/` | Professores e membros do núcleo | Coordenador | #4 |
-| `/equipe/professores/novo/` | Novo professor | Coordenador | #4 |
-| `/equipe/nucleo/novo/` | Novo membro do núcleo | Coordenador | #4 |
-| `/equipe/<id>/editar/` | Editar membro | Coordenador | #4 |
-| `/equipe/<id>/desativar/` (POST) | Desativar acesso | Coordenador | #4 |
+| `/equipe/` | Coordenadores, professores e membros do núcleo | Coordenador | #3/#4 (pronta) |
+| `/equipe/coordenadores/novo/` | Novo coordenador | Coordenador | #3 (pronta) |
+| `/equipe/professores/novo/` | Novo professor | Coordenador | #4 (pronta) |
+| `/equipe/nucleo/novo/` | Novo membro do núcleo | Coordenador | #4 (pronta) |
+| `/equipe/<id>/editar/` | Editar membro | Coordenador | #4 (pronta) |
+| `/equipe/<id>/desativar/` (POST) | Desativar ou reativar acesso | Coordenador | #4 (pronta) |
 | `/horarios/` | Grade de horários | Coordenador | #6 |
 | `/horarios/novo/`, `/horarios/<id>/editar/` | Cadastrar e editar horário | Coordenador | #6 |
 | `/horarios/<id>/excluir/` (POST) | Excluir horário | Coordenador | #6 |

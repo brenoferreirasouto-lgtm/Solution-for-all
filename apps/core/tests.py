@@ -24,6 +24,8 @@ class EsqueletoTestCase(TestCase):
         cls.professor = Usuario.objects.create_user("prof@teste.com", "senha-teste-1", nome="Prof. Ana", papel=P)
         cls.outro_professor = Usuario.objects.create_user("prof2@teste.com", "senha-teste-1", nome="Prof. Beto", papel=P)
         cls.nucleo = Usuario.objects.create_user("nucleo@teste.com", "senha-teste-1", nome="Núcleo", papel=N)
+        # Alvo das ações de desativar: "Desativar" agora é real, então não pode ser um dos usuários que logam.
+        cls.membro_alvo = Usuario.objects.create_user("alvo@teste.com", "senha-teste-1", nome="Prof. Alvo", papel=P)
 
         turma = Turma.objects.create(nome="7º B", ano_letivo=2026)
         disciplina = Disciplina.objects.create(nome="Ciências")
@@ -55,6 +57,7 @@ PAGINAS = [
     ("alunos:detalhe", {"pk": "aluno"}, (C, P, N)),
     ("alunos:editar", {"pk": "aluno"}, (C,)),
     ("escola:equipe", {}, (C,)),
+    ("escola:coordenador_novo", {}, (C,)),
     ("escola:professor_novo", {}, (C,)),
     ("escola:nucleo_novo", {}, (C,)),
     ("escola:membro_editar", {"pk": "professor"}, (C,)),
@@ -71,7 +74,7 @@ PAGINAS = [
 # Ações que mudam dados: só POST
 ACOES = [
     ("alunos:arquivar", {"pk": "aluno"}, (C,)),
-    ("escola:membro_desativar", {"pk": "professor"}, (C,)),
+    ("escola:membro_desativar", {"pk": "membro_alvo"}, (C,)),
     ("escola:horario_excluir", {"pk": "horario"}, (C,)),
     ("materiais:adaptacao_refazer", {"pk": "adaptacao"}, (P,)),
 ]
