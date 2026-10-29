@@ -16,6 +16,23 @@ class Papel(models.TextChoices):
     NUCLEO = "NUCLEO", "Núcleo psicopedagógico"
 
 
+# Catálogos (o /admin/): quais modelos cada papel gerencia e com quais ações.
+# Coordenador faz tudo; o núcleo cadastra e edita, mas não exclui.
+CATALOGOS = (
+    "escola.turma",
+    "escola.disciplina",
+    "escola.lecionacao",
+    "escola.horarioaula",
+    "alunos.necessidade",
+    "alunos.tipoadaptacao",
+    "alunos.aluno",
+)
+ACOES_CATALOGO = {
+    Papel.COORDENADOR: ("view", "add", "change", "delete"),
+    Papel.NUCLEO: ("view", "add", "change"),
+}
+
+
 class UsuarioManager(BaseUserManager):
     use_in_migrations = True
 
@@ -64,6 +81,36 @@ class Usuario(AbstractUser):
 
     def __str__(self):
         return self.nome or self.email
+
+    def save(self, *args, **kwargs):
+        # Quem gerencia catálogos entra no /admin/, então precisa de is_staff.
+        # O papel manda: o coordenador e o núcleo sempre têm; o professor, nunca
+        # (a não ser que seja superusuário).
+        self.is_staff = self.is_superuser or self.papel in ACOES_CATALOGO
+        update_fields = kwargs.get("update_fields")
+        if update_fields is not None and "papel" in update_fields:
+            kwargs["update_fields"] = {*update_fields, "is_staff"}
+        super().save(*args, **kwargs)
+
+    # Permissões dos catálogos vêm direto do papel (sem precisar de grupos no
+    # banco), então vale para qualquer usuário criado, em qualquer tela.
+    def _acoes_no_catalogo(self):
+        if not self.is_active:
+            return ()
+        return ACOES_CATALOGO.get(self.papel, ())
+
+    def has_perm(self, perm, obj=None):
+        if self.is_active and "." in perm:
+            app_label, codename = perm.split(".", 1)
+            acao, _, modelo = codename.partition("_")
+            if f"{app_label}.{modelo}" in CATALOGOS and acao in self._acoes_no_catalogo():
+                return True
+        return super().has_perm(perm, obj)
+
+    def has_module_perms(self, app_label):
+        if any(c.startswith(f"{app_label}.") for c in CATALOGOS) and self._acoes_no_catalogo():
+            return True
+        return super().has_module_perms(app_label)
 
     def get_full_name(self):
         return self.nome

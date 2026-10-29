@@ -1,0 +1,32 @@
+{% extends "layouts/app.html" %}
+{# Cadastro e edição de coordenador, professor e membro do núcleo. #}
+
+{% block conteudo %}
+<div class="pagina pagina--formulario">
+  <h1 class="pagina__titulo">{{ titulo }}</h1>
+  {% if subtitulo %}<p class="pagina__subtitulo">{{ subtitulo }}</p>{% endif %}
+
+  <form method="post" class="formulario" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <p class="aviso aviso--erro" role="alert">{{ form.non_field_errors|join:" " }}</p>
+    {% endif %}
+
+    {% include "partials/_campo.html" with campo=form.nome %}
+    {% include "partials/_campo.html" with campo=form.email %}
+    {% include "partials/_campo.html" with campo=form.senha1 %}
+    {% include "partials/_campo.html" with campo=form.senha2 %}
+
+    {% if e_professor %}
+      {% include "partials/_campo.html" with campo=form.turmas %}
+      {% include "partials/_campo.html" with campo=form.disciplina %}
+      {% include "partials/_campo.html" with campo=form.alunos %}
+    {% endif %}
+
+    <div class="formulario__acoes">
+      <button class="botao botao--primario" type="submit">Salvar</button>
+      <a class="botao botao--secundario" href="{% url 'escola:equipe' %}">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

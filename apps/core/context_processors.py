@@ -10,7 +10,7 @@ ALUNOS = ("Alunos", "alunos:lista", ("alunos:",))
 MEUS_ALUNOS = ("Meus alunos", "alunos:lista", ("alunos:",))
 ADAPTAR = ("Adaptar material", "materiais:adaptar", ("materiais:adaptar",))
 MATERIAIS = ("Materiais", "materiais:lista", ("materiais:lista", "materiais:detalhe", "materiais:adaptacao"))
-EQUIPE = ("Equipe", "escola:equipe", ("escola:equipe", "escola:professor_", "escola:nucleo_", "escola:membro_"))
+EQUIPE = ("Equipe", "escola:equipe", ("escola:equipe", "escola:coordenador_", "escola:professor_", "escola:nucleo_", "escola:membro_"))
 HORARIOS = ("Horários", "escola:horarios", ("escola:horario",))
 
 MENU_POR_PAPEL = {
