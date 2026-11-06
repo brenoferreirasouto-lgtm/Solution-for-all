@@ -1,0 +1,61 @@
+{% extends "layouts/app.html" %}
+{# Entrega #6: grade semanal das aulas, por turma. #}
+
+{% block conteudo %}
+<div class="pagina">
+  <div class="pagina__topo">
+    <div>
+      <h1 class="pagina__titulo">{{ titulo }}</h1>
+      <p class="pagina__subtitulo">{{ subtitulo }}</p>
+    </div>
+    <a class="botao botao--primario" href="{{ url_novo }}">Novo horário</a>
+  </div>
+
+  <form method="get" class="filtro-turma">
+    <div class="campo">
+      <label for="filtro-turma">Turma</label>
+      <select id="filtro-turma" name="turma">
+        <option value="">Todas as turmas</option>
+        {% for t in turmas %}
+          <option value="{{ t.pk }}"{% if turma and t.pk == turma.pk %} selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button class="botao botao--secundario" type="submit">Mostrar</button>
+  </form>
+
+  {% if not total %}
+    <p class="vazio">
+      {% if turma %}A turma {{ turma.nome }} ainda não tem aulas na grade.{% else %}Nenhuma aula na grade ainda.{% endif %}
+      <a href="{{ url_novo }}">Cadastrar o primeiro horário</a>.
+    </p>
+  {% endif %}
+
+  <div class="grade">
+    {% for dia in dias %}
+      <section class="grade__dia{% if dia.hoje %} grade__dia--hoje{% endif %}" aria-labelledby="dia-{{ dia.numero }}">
+        <h2 id="dia-{{ dia.numero }}" class="grade__nome-dia">
+          {{ dia.nome }}
+          {% if dia.hoje %}<span class="selo">Hoje</span>{% endif %}
+        </h2>
+        {% if dia.aulas %}
+          <ul class="grade__aulas">
+            {% for aula in dia.aulas %}
+              <li>
+                <a class="aula" href="{% url 'escola:horario_editar' aula.pk %}"
+                   aria-label="Editar: {{ dia.nome }}, {{ aula.hora_inicio|time:'H:i' }} às {{ aula.hora_fim|time:'H:i' }}, {{ aula.lecionacao.disciplina }}, {{ aula.lecionacao.turma.nome }}, {{ aula.lecionacao.professor.nome }}">
+                  <span class="aula__hora">{{ aula.hora_inicio|time:"H:i" }} – {{ aula.hora_fim|time:"H:i" }}</span>
+                  <span class="aula__info">{{ aula.lecionacao.disciplina }}{% if not turma %} · <span class="sem-quebra">{{ aula.lecionacao.turma.nome }}</span>{% endif %}</span>
+                  <span class="aula__info">{{ aula.lecionacao.professor.nome }}</span>
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="vazio">Sem aulas.</p>
+        {% endif %}
+      </section>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
