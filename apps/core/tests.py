@@ -53,9 +53,9 @@ class EsqueletoTestCase(TestCase):
 PAGINAS = [
     ("painel:painel", {}, (C, P, N)),
     ("alunos:lista", {}, (C, P, N)),
-    ("alunos:novo", {}, (C,)),
+    ("alunos:novo", {}, (C, N)),
     ("alunos:detalhe", {"pk": "aluno"}, (C, P, N)),
-    ("alunos:editar", {"pk": "aluno"}, (C,)),
+    ("alunos:editar", {"pk": "aluno"}, (C, N)),
     ("escola:equipe", {}, (C,)),
     ("escola:coordenador_novo", {}, (C,)),
     ("escola:professor_novo", {}, (C,)),
@@ -74,6 +74,8 @@ PAGINAS = [
 # Ações que mudam dados: só POST
 ACOES = [
     ("alunos:arquivar", {"pk": "aluno"}, (C,)),
+    ("alunos:atencao", {"pk": "aluno"}, (C, N)),
+    ("alunos:plano", {"pk": "aluno"}, (C, N)),
     ("escola:membro_desativar", {"pk": "membro_alvo"}, (C,)),
     ("escola:horario_excluir", {"pk": "horario"}, (C,)),
     ("materiais:adaptacao_refazer", {"pk": "adaptacao"}, (P,)),

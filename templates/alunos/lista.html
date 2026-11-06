@@ -1,0 +1,45 @@
+{% extends "layouts/app.html" %}
+{# Entrega #5: lista simples para chegar aos perfis (a busca é da entrega #10). Entrega #6: seção de atenção. #}
+
+{% block conteudo %}
+<div class="pagina">
+  <div class="pagina__topo">
+    <div>
+      <h1 class="pagina__titulo">{{ titulo }}</h1>
+      <p class="pagina__subtitulo">{{ subtitulo }}</p>
+    </div>
+    {% if pode_cadastrar %}<a class="botao botao--primario" href="{% url 'alunos:novo' %}">Novo aluno</a>{% endif %}
+  </div>
+
+  {% if atencao %}
+    <section class="bloco bloco--atencao" aria-labelledby="titulo-atencao">
+      <h2 id="titulo-atencao" class="bloco__titulo">Precisam de atenção <span class="contador">{{ atencao|length }}</span></h2>
+      <ul class="lista-alunos">
+        {% for aluno in atencao %}{% include "alunos/_item.html" with aluno=aluno detalhe="motivo" %}{% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  <section class="bloco" aria-labelledby="titulo-todos">
+    <h2 id="titulo-todos" class="bloco__titulo">Todos <span class="contador">{{ ativos|length }}</span></h2>
+    {% if ativos %}
+      <ul class="lista-alunos">
+        {% for aluno in ativos %}{% include "alunos/_item.html" with aluno=aluno %}{% endfor %}
+      </ul>
+    {% elif pode_cadastrar %}
+      <p class="vazio">Nenhum aluno cadastrado ainda. Comece por <a href="{% url 'alunos:novo' %}">Novo aluno</a>.</p>
+    {% else %}
+      <p class="vazio">Nenhum aluno vinculado a você ainda. A coordenação faz esse vínculo no cadastro do aluno.</p>
+    {% endif %}
+  </section>
+
+  {% if arquivados %}
+    <details class="bloco bloco--arquivados">
+      <summary class="bloco__titulo">Arquivados <span class="contador">{{ arquivados|length }}</span></summary>
+      <ul class="lista-alunos">
+        {% for aluno in arquivados %}{% include "alunos/_item.html" with aluno=aluno %}{% endfor %}
+      </ul>
+    </details>
+  {% endif %}
+</div>
+{% endblock %}
