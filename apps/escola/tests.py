@@ -1,4 +1,4 @@
-"""Entregas #3 e #4: a coordenação cadastra coordenador, professor e núcleo."""
+"""Entregas #3 e #4 (equipe) e #6 (horários das aulas)."""
 
 from django.test import TestCase
 from django.urls import reverse
@@ -6,7 +6,7 @@ from django.urls import reverse
 from apps.alunos.models import Aluno
 from apps.contas.models import Papel, Usuario
 
-from .models import Disciplina, Lecionacao, Turma
+from .models import DiaSemana, Disciplina, HorarioAula, Lecionacao, Turma
 
 SENHA = "senha-forte-9X"
 
@@ -156,3 +156,110 @@ class EdicaoTests(EquipeBase):
         self.client.post(reverse("escola:membro_desativar", kwargs={"pk": self.coord.pk}))
         self.coord.refresh_from_db()
         self.assertTrue(self.coord.is_active)
+
+
+class HorariosTests(EquipeBase):
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.prof2 = Usuario.objects.create_user("prof2@teste.com", "senha-teste-1", nome="Prof. Beto", papel=Papel.PROFESSOR)
+        cls.turma2 = Turma.objects.create(nome="8º A", ano_letivo=2026)
+        cls.matematica = Disciplina.objects.create(nome="Matemática")
+
+    def aula(self, **extra):
+        dados = {
+            "turma": self.turma.pk,
+            "disciplina": self.disciplina.pk,
+            "professor": self.prof.pk,
+            "dia_semana": DiaSemana.SEGUNDA,
+            "hora_inicio": "08:00",
+            "hora_fim": "08:50",
+        }
+        dados.update(extra)
+        return self.client.post(reverse("escola:horario_novo"), dados)
+
+    def test_cadastra_horario_e_cria_a_lecionacao(self):
+        resposta = self.aula()
+        self.assertRedirects(resposta, f"{reverse('escola:horarios')}?turma={self.turma.pk}")
+        horario = HorarioAula.objects.get()
+        self.assertEqual(
+            (horario.lecionacao.professor, horario.lecionacao.turma, horario.lecionacao.disciplina),
+            (self.prof, self.turma, self.disciplina),
+        )
+        # Uma segunda aula da mesma matéria reaproveita a lecionação.
+        self.aula(dia_semana=DiaSemana.QUARTA)
+        self.assertEqual(Lecionacao.objects.count(), 1)
+        self.assertEqual(HorarioAula.objects.count(), 2)
+
+    def test_fim_antes_do_inicio_e_recusado(self):
+        resposta = self.aula(hora_inicio="09:00", hora_fim="08:00")
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(resposta.context["form"].errors["hora_fim"], ["O fim precisa ser depois do início."])
+        self.assertFalse(HorarioAula.objects.exists())
+
+    def test_turma_nao_tem_duas_aulas_no_mesmo_horario(self):
+        self.aula()
+        resposta = self.aula(professor=self.prof2.pk, disciplina=self.matematica.pk, hora_inicio="08:30", hora_fim="09:20")
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn("A turma 7º B já tem Ciências nesse horário", resposta.context["form"].non_field_errors()[0])
+        self.assertEqual(HorarioAula.objects.count(), 1)
+
+    def test_professor_nao_da_duas_aulas_ao_mesmo_tempo(self):
+        self.aula()
+        resposta = self.aula(turma=self.turma2.pk, hora_inicio="07:30", hora_fim="08:10")
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn("Prof. Ana já dá aula nesse horário", resposta.context["form"].non_field_errors()[0])
+
+    def test_aulas_seguidas_e_outro_dia_sao_permitidas(self):
+        self.aula()
+        self.assertEqual(self.aula(hora_inicio="08:50", hora_fim="09:40").status_code, 302)  # começa quando a outra acaba
+        self.assertEqual(self.aula(dia_semana=DiaSemana.TERCA).status_code, 302)
+        self.assertEqual(HorarioAula.objects.count(), 3)
+
+    def test_editar_nao_conflita_com_ele_mesmo(self):
+        self.aula()
+        horario = HorarioAula.objects.get()
+        dados = {
+            "turma": self.turma.pk,
+            "disciplina": self.matematica.pk,
+            "professor": self.prof.pk,
+            "dia_semana": DiaSemana.SEGUNDA,
+            "hora_inicio": "08:00",
+            "hora_fim": "09:00",
+        }
+        resposta = self.client.post(reverse("escola:horario_editar", kwargs={"pk": horario.pk}), dados)
+        self.assertEqual(resposta.status_code, 302)
+        horario.refresh_from_db()
+        self.assertEqual(horario.lecionacao.disciplina, self.matematica)
+        self.assertEqual(f"{horario.hora_fim:%H:%M}", "09:00")
+
+    def test_excluir_so_por_post(self):
+        self.aula()
+        horario = HorarioAula.objects.get()
+        url = reverse("escola:horario_excluir", kwargs={"pk": horario.pk})
+        self.assertEqual(self.client.get(url).status_code, 405)
+        self.assertRedirects(self.client.post(url), f"{reverse('escola:horarios')}?turma={self.turma.pk}")
+        self.assertFalse(HorarioAula.objects.exists())
+
+    def test_grade_filtra_por_turma(self):
+        self.aula()
+        self.aula(turma=self.turma2.pk, professor=self.prof2.pk, dia_semana=DiaSemana.TERCA)
+        resposta = self.client.get(reverse("escola:horarios"))
+        self.assertEqual(resposta.context["total"], 2)
+        resposta = self.client.get(reverse("escola:horarios"), {"turma": self.turma2.pk})
+        self.assertEqual(resposta.context["total"], 1)
+        self.assertContains(resposta, "Prof. Beto")
+        self.assertNotContains(resposta, "Prof. Ana")
+
+    def test_so_a_coordenacao_cuida_dos_horarios(self):
+        nucleo = Usuario.objects.create_user("nucleo@teste.com", "senha-teste-1", nome="Núcleo", papel=Papel.NUCLEO)
+        for usuario in (self.prof, nucleo):
+            self.client.force_login(usuario)
+            self.assertEqual(self.client.get(reverse("escola:horarios")).status_code, 403)
+            self.assertEqual(self.aula().status_code, 403)
+        self.assertFalse(HorarioAula.objects.exists())
+
+    def test_aulas_de_hoje(self):
+        self.aula(dia_semana=DiaSemana.SEGUNDA)
+        self.aula(dia_semana=DiaSemana.TERCA)
+        self.assertEqual(HorarioAula.objects.do_dia(DiaSemana.TERCA).count(), 1)

@@ -1,22 +1,21 @@
 """
 Equipe (coordenadores, professores e membros do núcleo) e horários das aulas.
-Tudo aqui é da coordenação. A equipe é a entrega #3/#4; os horários, a #6
-(ainda páginas "em construção").
+Tudo aqui é da coordenação. A equipe é a entrega #3/#4; os horários, a #6.
 """
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 from django.views import View
-from django.views.generic import FormView, TemplateView
+from django.views.generic import CreateView, FormView, TemplateView, UpdateView
 
 from apps.contas.models import Papel
 from apps.core.permissoes import COORDENACAO, PapelRequeridoMixin
-from apps.core.views import AcaoEmConstrucao, PaginaEmConstrucao
 
-from .forms import FORMULARIO_POR_PAPEL, CoordenadorForm, NucleoForm, ProfessorForm
-from .models import HorarioAula
+from .forms import FORMULARIO_POR_PAPEL, CoordenadorForm, HorarioForm, NucleoForm, ProfessorForm
+from .models import DiaSemana, HorarioAula, Turma
 
 Usuario = get_user_model()
 
@@ -149,36 +148,111 @@ class MembroDesativarView(PapelRequeridoMixin, View):
         return redirect("escola:equipe")
 
 
-class HorariosMixin:
-    def get_queryset(self):
-        return HorarioAula.objects.all()
+# Horários das aulas (entrega #6) ---------------------------------------------
 
 
-class HorariosView(PaginaEmConstrucao):
+def url_da_grade(turma_id=None):
+    url = reverse("escola:horarios")
+    return f"{url}?turma={turma_id}" if turma_id else url
+
+
+class HorariosView(PapelRequeridoMixin, TemplateView):
+    """Grade semanal, um bloco por dia. ?turma=<id> mostra só uma turma."""
+
     papeis = COORDENACAO
-    titulo = "Horários das aulas"
-    subtitulo = "Grade semanal por turma. Alimenta o card \"Aulas de hoje\"."
-    entrega = 6
+    template_name = "escola/horarios.html"
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        turmas = Turma.objects.filter(ativo=True)
+        turma = None
+        turma_id = self.request.GET.get("turma", "")
+        if turma_id.isdigit():
+            turma = Turma.objects.filter(pk=turma_id).first()
+
+        aulas = HorarioAula.objects.select_related(
+            "lecionacao__turma", "lecionacao__disciplina", "lecionacao__professor"
+        ).order_by("dia_semana", "hora_inicio", "lecionacao__turma__nome")
+        if turma:
+            aulas = aulas.filter(lecionacao__turma=turma)
+        else:
+            aulas = aulas.filter(lecionacao__turma__ativo=True)
+        aulas = list(aulas)
+
+        hoje = timezone.localdate().weekday()
+        dias = []
+        for numero, nome in DiaSemana.choices:
+            do_dia = [a for a in aulas if a.dia_semana == numero]
+            # Sábado só aparece quando tem aula.
+            if numero == DiaSemana.SABADO and not do_dia:
+                continue
+            dias.append({"numero": numero, "nome": nome, "aulas": do_dia, "hoje": numero == hoje})
+
+        contexto.update(
+            titulo="Horários das aulas",
+            subtitulo="Grade semanal por turma. Toque em uma aula para editar ou excluir.",
+            turmas=turmas,
+            turma=turma,
+            dias=dias,
+            total=len(aulas),
+            url_novo=f"{reverse('escola:horario_novo')}?turma={turma.pk}" if turma else reverse("escola:horario_novo"),
+        )
+        return contexto
 
 
-class HorarioNovoView(PaginaEmConstrucao):
+class HorarioFormMixin(PapelRequeridoMixin):
     papeis = COORDENACAO
+    form_class = HorarioForm
+    template_name = "escola/horario_form.html"
+
+    def get_success_url(self):
+        return url_da_grade(self.object.lecionacao.turma_id)
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        turma_id = None
+        if self.object:
+            turma_id = self.object.lecionacao.turma_id
+        contexto.update(titulo=self.titulo, voltar_url=url_da_grade(turma_id))
+        return contexto
+
+
+class HorarioNovoView(HorarioFormMixin, CreateView):
     titulo = "Novo horário"
-    entrega = 6
-    voltar = "escola:horarios"
+
+    def get_initial(self):
+        inicial = super().get_initial()
+        turma = self.request.GET.get("turma", "")
+        if turma.isdigit():
+            inicial["turma"] = int(turma)
+        return inicial
+
+    def form_valid(self, form):
+        resposta = super().form_valid(form)
+        messages.success(self.request, f"Horário cadastrado: {self.object}.")
+        return resposta
 
 
-class HorarioEditarView(HorariosMixin, PaginaEmConstrucao):
+class HorarioEditarView(HorarioFormMixin, UpdateView):
+    titulo = "Editar horário"
+
+    def get_queryset(self):
+        return HorarioAula.objects.select_related("lecionacao__turma", "lecionacao__disciplina", "lecionacao__professor")
+
+    def form_valid(self, form):
+        resposta = super().form_valid(form)
+        messages.success(self.request, f"Horário atualizado: {self.object}.")
+        return resposta
+
+
+class HorarioExcluirView(PapelRequeridoMixin, View):
     papeis = COORDENACAO
-    entrega = 6
-    voltar = "escola:horarios"
+    http_method_names = ["post"]
 
-    def get_titulo(self, objeto):
-        return f"Editar horário: {objeto}"
-
-
-class HorarioExcluirView(HorariosMixin, AcaoEmConstrucao):
-    papeis = COORDENACAO
-    mensagem = "Excluir horário"
-    entrega = 6
-    destino = "escola:horarios"
+    def post(self, request, pk):
+        horario = get_object_or_404(HorarioAula.objects.select_related("lecionacao"), pk=pk)
+        turma_id = horario.lecionacao.turma_id
+        descricao = str(horario)
+        horario.delete()
+        messages.success(request, f"Horário excluído: {descricao}.")
+        return redirect(url_da_grade(turma_id))

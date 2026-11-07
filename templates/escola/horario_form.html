@@ -1,0 +1,38 @@
+{% extends "layouts/app.html" %}
+{# Entrega #6: cadastrar e editar um horário da grade. #}
+
+{% block conteudo %}
+<div class="pagina pagina--formulario">
+  <h1 class="pagina__titulo">{{ titulo }}</h1>
+  <p class="pagina__subtitulo">Turma, matéria, professor, dia e horário da aula.</p>
+
+  <form method="post" class="formulario" novalidate>
+    {% csrf_token %}
+    {% for erro in form.non_field_errors %}
+      <p class="aviso aviso--erro" role="alert">{{ erro }}</p>
+    {% endfor %}
+
+    {% include "partials/_campo.html" with campo=form.turma %}
+    {% include "partials/_campo.html" with campo=form.disciplina %}
+    {% include "partials/_campo.html" with campo=form.professor %}
+    {% include "partials/_campo.html" with campo=form.dia_semana %}
+    <div class="formulario__linha">
+      {% include "partials/_campo.html" with campo=form.hora_inicio %}
+      {% include "partials/_campo.html" with campo=form.hora_fim %}
+    </div>
+
+    <div class="formulario__acoes">
+      <button class="botao botao--primario" type="submit">Salvar</button>
+      <a class="botao botao--secundario" href="{{ voltar_url }}">Cancelar</a>
+    </div>
+  </form>
+
+  {% if object %}
+    <form method="post" action="{% url 'escola:horario_excluir' object.pk %}" class="formulario__excluir"
+          data-confirmar="Excluir a aula de {{ object.lecionacao.disciplina }} ({{ object.lecionacao.turma.nome }}) de {{ object.get_dia_semana_display|lower }} às {{ object.hora_inicio|time:'H:i' }}?">
+      {% csrf_token %}
+      <button class="botao botao--secundario" type="submit">Excluir horário</button>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}
