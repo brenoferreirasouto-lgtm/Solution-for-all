@@ -70,6 +70,7 @@ PAGINAS = [
     ("materiais:adaptar", {}, (P,)),
     ("materiais:adaptacao", {"pk": "adaptacao"}, (C, P, N)),
     ("materiais:adaptacao_exportar", {"pk": "adaptacao"}, (C, P, N)),
+    ("materiais:adaptacao_word", {"pk": "adaptacao"}, (C, P, N)),
 ]
 
 # Ações que mudam dados: só POST
@@ -79,6 +80,7 @@ ACOES = [
     ("alunos:plano", {"pk": "aluno"}, (C, N)),
     ("escola:membro_desativar", {"pk": "membro_alvo"}, (C,)),
     ("escola:horario_excluir", {"pk": "horario"}, (C,)),
+    ("materiais:adaptacao_salvar", {"pk": "adaptacao"}, (P,)),
     ("materiais:adaptacao_refazer", {"pk": "adaptacao"}, (P,)),
 ]
 

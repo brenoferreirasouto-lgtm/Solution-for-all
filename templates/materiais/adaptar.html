@@ -1,0 +1,75 @@
+{% extends "layouts/app.html" %}
+{% load static %}
+{# Entrega #7: Adaptar material com IA. Os 3 passos do protótipo: aluno, conteúdo e formato. #}
+
+{% block conteudo %}
+<div class="pagina pagina--formulario">
+  <h1 class="pagina__titulo">{{ titulo }}</h1>
+  <p class="pagina__subtitulo">{{ subtitulo }}</p>
+
+  {% if sem_alunos %}
+    <p class="aviso aviso--aviso">
+      Você ainda não tem alunos vinculados. A coordenação faz esse vínculo no cadastro do aluno.
+    </p>
+  {% else %}
+  <form method="post" enctype="multipart/form-data" class="formulario" novalidate data-adaptar>
+    {% csrf_token %}
+    {% if form.errors %}
+      <p class="aviso aviso--erro" role="alert">
+        Confira os campos marcados em vermelho.{% if form.arquivo.errors %} Por segurança, o navegador esquece o arquivo: escolha de novo.{% endif %}
+      </p>
+    {% endif %}
+
+    <fieldset class="grupo passo">
+      <legend><span class="passo__numero" aria-hidden="true">1</span> Aluno</legend>
+      {% include "partials/_campo.html" with campo=form.aluno %}
+    </fieldset>
+
+    <fieldset class="grupo passo">
+      <legend><span class="passo__numero" aria-hidden="true">2</span> Conteúdo</legend>
+      <div class="segmentado" role="radiogroup" aria-label="{{ form.origem.label }}">
+        {% for opcao in form.origem %}
+          <label class="segmentado__opcao">{{ opcao.tag }}<span>{{ opcao.choice_label }}</span></label>
+        {% endfor %}
+      </div>
+      <div class="origem" data-origem="arquivo">
+        {% include "partials/_campo.html" with campo=form.arquivo %}
+      </div>
+      <div class="origem" data-origem="texto">
+        {% include "partials/_campo.html" with campo=form.texto %}
+      </div>
+      {% if form.tem_materiais %}
+        <div class="origem" data-origem="material">
+          {% include "partials/_campo.html" with campo=form.material %}
+        </div>
+      {% endif %}
+      <div class="origem" data-origem="arquivo texto">
+        {% include "partials/_campo.html" with campo=form.titulo %}
+      </div>
+    </fieldset>
+
+    <fieldset class="grupo passo">
+      <legend><span class="passo__numero" aria-hidden="true">3</span> Formato</legend>
+      <div class="formatos{% if form.tipo.errors %} campo--erro{% endif %}">
+        {% for opcao in form.tipo %}
+          <label class="formato">
+            {{ opcao.tag }}
+            <span class="formato__nome">{{ opcao.choice_label }} <span class="selo formato__perfil" data-perfil hidden>Do perfil</span></span>
+            <span class="formato__descricao">{{ opcao.data.value.instance.descricao }}</span>
+          </label>
+        {% endfor %}
+      </div>
+      {% for erro in form.tipo.errors %}<p class="campo__erro">{{ erro }}</p>{% endfor %}
+      <p class="grupo__nota">Já vem marcado o formato do perfil do aluno. Para outro formato, adapte de novo usando "Material já enviado".</p>
+    </fieldset>
+
+    <div class="formulario__acoes">
+      <button class="botao botao--primario" type="submit" data-gerar>Gerar adaptação</button>
+      <a class="botao botao--secundario" href="{% url 'materiais:lista' %}">Cancelar</a>
+    </div>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'js/adaptar.js' %}" defer></script>{% endblock %}

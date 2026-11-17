@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load static %}
+{# Entrega #8: página limpa para imprimir ou salvar em PDF. Sem nome nem necessidades do aluno. #}
+
+{% block body_class %}tela-exportar{% endblock %}
+
+{% block corpo %}
+<div class="exportar-barra">
+  <a class="botao botao--secundario" href="{{ voltar_url }}">Voltar</a>
+  <button class="botao botao--primario" type="button" data-imprimir hidden>Imprimir ou salvar em PDF</button>
+  <a class="botao botao--secundario" href="{% url 'materiais:adaptacao_word' adaptacao.pk %}">Baixar em Word</a>
+</div>
+<main id="conteudo" class="folha" tabindex="-1">
+  <h1 class="folha__titulo">{{ adaptacao.material.titulo }}</h1>
+  {% for linhas in blocos %}<p>{% for linha in linhas %}{{ linha }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</p>{% endfor %}
+  <p class="folha__nota">{{ nota }}</p>
+</main>
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'js/imprimir.js' %}" defer></script>{% endblock %}

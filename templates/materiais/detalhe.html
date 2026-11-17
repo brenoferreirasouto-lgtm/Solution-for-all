@@ -1,0 +1,43 @@
+{% extends "layouts/app.html" %}
+{# Entrega #8: um material e todas as adaptações feitas com ele. #}
+
+{% block conteudo %}
+<div class="pagina pagina--perfil">
+  <h1 class="pagina__titulo">{{ material.titulo }}</h1>
+  <p class="pagina__subtitulo">
+    {% if material.disciplina %}{{ material.disciplina }} · {% endif %}{{ material.professor.nome }} · enviado em {{ material.criado_em|date:"d/m/Y" }}
+    · {% if material.arquivo %}arquivo {{ material.nome_arquivo }}{% else %}texto colado{% endif %}
+  </p>
+
+  {% if pode_adaptar %}
+    <div class="acoes-linha">
+      <a class="botao botao--primario" href="{% url 'materiais:adaptar' %}?material={{ material.pk }}">Adaptar para um aluno</a>
+    </div>
+  {% endif %}
+
+  <section class="cartao" aria-labelledby="titulo-adaptacoes">
+    <h2 id="titulo-adaptacoes" class="cartao__titulo">Adaptações <span class="contador">{{ adaptacoes|length }}</span></h2>
+    {% if adaptacoes %}
+      <ul class="lista-simples">
+        {% for a in adaptacoes %}
+          <li>
+            <a href="{% url 'materiais:adaptacao' a.pk %}">{{ a.aluno.nome }} · {{ a.tipo.nome }}</a>
+            · versão {{ a.versao }} · {{ a.criado_em|date:"d/m/Y" }}{% if a.revisado_em %} · revisada{% endif %}{% if a.status == "ERRO" %} · erro{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="vazio">Nenhuma adaptação ainda.</p>
+    {% endif %}
+  </section>
+
+  <details class="cartao material-original">
+    <summary class="cartao__titulo">Texto do material original</summary>
+    {% if material.texto_extraido %}
+      <div class="material-original__texto">{{ material.texto_extraido|linebreaks }}</div>
+    {% else %}
+      <p class="vazio">Sem texto.</p>
+    {% endif %}
+  </details>
+</div>
+{% endblock %}

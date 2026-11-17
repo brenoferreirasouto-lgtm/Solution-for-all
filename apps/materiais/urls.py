@@ -9,6 +9,8 @@ urlpatterns = [
     path("materiais/adaptar/", views.AdaptarView.as_view(), name="adaptar"),
     path("materiais/<int:pk>/", views.MaterialDetalheView.as_view(), name="detalhe"),
     path("adaptacoes/<int:pk>/", views.AdaptacaoDetalheView.as_view(), name="adaptacao"),
+    path("adaptacoes/<int:pk>/salvar/", views.AdaptacaoSalvarView.as_view(), name="adaptacao_salvar"),
     path("adaptacoes/<int:pk>/refazer/", views.AdaptacaoRefazerView.as_view(), name="adaptacao_refazer"),
     path("adaptacoes/<int:pk>/exportar/", views.AdaptacaoExportarView.as_view(), name="adaptacao_exportar"),
+    path("adaptacoes/<int:pk>/exportar/word/", views.AdaptacaoWordView.as_view(), name="adaptacao_word"),
 ]
