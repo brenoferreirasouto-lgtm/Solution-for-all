@@ -1,0 +1,79 @@
+{% extends "layouts/app.html" %}
+{% load static %}
+{# Entrega #8: a tela "Material adaptado" do protótipo: texto, Salvar, Ouvir, Refazer e Exportar. #}
+
+{% block conteudo %}
+<div class="pagina pagina--perfil">
+  <header class="material-topo">
+    <p class="selos">
+      <span class="selo selo--ia">Gerado por IA{% if adaptacao.ia_simulada %} (simulada){% endif %}</span>
+      {% if adaptacao.revisado_em %}
+        <span class="selo">Revisado em {{ adaptacao.revisado_em|date:"d/m/Y" }}</span>
+      {% elif adaptacao.status != "ERRO" %}
+        <span class="selo selo--atencao">Ainda não revisado</span>
+      {% endif %}
+    </p>
+    <h1 class="pagina__titulo">{{ adaptacao.material.titulo }}</h1>
+    <p class="pagina__subtitulo">
+      {% if aluno_visivel %}<a href="{% url 'alunos:detalhe' adaptacao.aluno.pk %}">{{ adaptacao.aluno.nome }}</a>{% else %}{{ adaptacao.aluno.nome }}{% endif %}
+      · {{ adaptacao.tipo.nome }} · versão {{ adaptacao.versao }}
+    </p>
+  </header>
+
+  {% if adaptacao.status == "ERRO" %}
+    <p class="aviso aviso--erro">A IA não respondeu nesta versão.{% if e_autor %} Use Refazer para tentar de novo.{% endif %}</p>
+  {% elif e_autor %}
+    <form method="post" action="{% url 'materiais:adaptacao_salvar' adaptacao.pk %}" class="cartao material-texto">
+      {% csrf_token %}
+      <label class="cartao__titulo" for="id_conteudo">Texto adaptado</label>
+      <p class="cartao__meta" id="ajuda-conteudo">Revise e corrija o que for preciso antes de usar com o aluno. Depois, toque em Salvar.</p>
+      <textarea name="conteudo" id="id_conteudo" rows="{{ linhas }}" aria-describedby="ajuda-conteudo" data-ouvir-fonte>{{ form.conteudo.value }}</textarea>
+      <button class="botao botao--primario botao--largo" type="submit">Salvar</button>
+    </form>
+  {% else %}
+    <article class="cartao material-texto" aria-label="Texto adaptado" data-ouvir-fonte>
+      {% for linhas in blocos %}<p>{% for linha in linhas %}{{ linha }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</p>{% endfor %}
+    </article>
+  {% endif %}
+
+  {% if adaptacao.status != "ERRO" or e_autor %}
+    <div class="acoes-material">
+      {% if adaptacao.status != "ERRO" %}
+        <button type="button" class="botao botao--secundario" data-ouvir hidden aria-pressed="false">Ouvir</button>
+      {% endif %}
+      {% if e_autor %}
+        <form method="post" action="{% url 'materiais:adaptacao_refazer' adaptacao.pk %}"
+              data-confirmar="Gerar uma nova versão? Esta versão continua guardada no histórico.">
+          {% csrf_token %}
+          <button type="submit" class="botao botao--secundario">Refazer</button>
+        </form>
+      {% endif %}
+      {% if adaptacao.status != "ERRO" %}
+        <a class="botao botao--secundario acoes-material__largo" href="{% url 'materiais:adaptacao_exportar' adaptacao.pk %}">Exportar</a>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {% if outras_versoes %}
+    <section class="cartao" aria-labelledby="titulo-versoes">
+      <h2 id="titulo-versoes" class="cartao__titulo">Outras versões</h2>
+      <ul class="lista-simples">
+        {% for v in outras_versoes %}
+          <li>
+            <a href="{% url 'materiais:adaptacao' v.pk %}">Versão {{ v.versao }}</a>
+            · {{ v.criado_em|date:"d/m/Y H:i" }}{% if v.revisado_em %} · revisada{% endif %}{% if v.status == "ERRO" %} · erro{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  <p class="perfil-rodape">
+    {% if material_visivel %}Material: <a href="{% url 'materiais:detalhe' adaptacao.material.pk %}">{{ adaptacao.material.titulo }}</a>. {% endif %}
+    Gerado em {{ adaptacao.criado_em|date:"d/m/Y \à\s H:i" }}{% if adaptacao.criado_por %} por {{ adaptacao.criado_por.nome }}{% endif %}.
+    A IA recebeu só o texto do material e o formato, nunca os dados do aluno.
+  </p>
+</div>
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'js/ouvir.js' %}" defer></script>{% endblock %}

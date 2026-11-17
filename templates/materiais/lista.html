@@ -1,0 +1,40 @@
+{% extends "layouts/app.html" %}
+{# Entrega #8: os materiais enviados e quantas adaptações cada um tem. #}
+
+{% block conteudo %}
+<div class="pagina">
+  <div class="pagina__topo">
+    <div>
+      <h1 class="pagina__titulo">{{ titulo }}</h1>
+      <p class="pagina__subtitulo">{{ subtitulo }}</p>
+    </div>
+    {% if pode_adaptar %}<a class="botao botao--primario" href="{% url 'materiais:adaptar' %}">Adaptar material</a>{% endif %}
+  </div>
+
+  {% if materiais %}
+    <ul class="lista-materiais">
+      {% for material in materiais %}
+        <li>
+          <a class="material-item" href="{% url 'materiais:detalhe' material.pk %}">
+            <span class="material-item__icone" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22"><path d="M7 3h7l5 5v13H7z M14 3v5h5 M10 13h6 M10 17h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+            </span>
+            <span class="aluno-item__dados">
+              <strong>{{ material.titulo }}</strong>
+              <span>
+                {% if material.disciplina %}{{ material.disciplina }} · {% endif %}{% if mostrar_professor %}{{ material.professor.nome }} · {% endif %}{{ material.criado_em|date:"d/m/Y" }}
+              </span>
+              <span>{{ material.total_adaptacoes }} adaptaç{{ material.total_adaptacoes|pluralize:"ão,ões" }}</span>
+            </span>
+            <svg class="aluno-item__seta" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% elif pode_adaptar %}
+    <p class="vazio">Você ainda não enviou materiais. Comece por <a href="{% url 'materiais:adaptar' %}">Adaptar material</a>.</p>
+  {% else %}
+    <p class="vazio">Os professores ainda não enviaram materiais.</p>
+  {% endif %}
+</div>
+{% endblock %}

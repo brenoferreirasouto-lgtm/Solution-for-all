@@ -1,6 +1,7 @@
 """
 Cria dados FICTÍCIOS para testar o app: um usuário de cada papel, turmas,
-disciplinas, a grade de horários e os alunos que aparecem no protótipo.
+disciplinas, a grade de horários, os alunos do protótipo e alguns materiais
+já adaptados.
 
     python manage.py popular_demo
 
@@ -19,6 +20,8 @@ from django.utils import timezone
 from apps.alunos.models import Aluno, Necessidade, TipoAdaptacao
 from apps.contas.models import Papel, Usuario
 from apps.escola.models import DiaSemana, Disciplina, HorarioAula, Lecionacao, Turma
+from apps.materiais.models import Adaptacao, Material
+from apps.materiais.services.adaptacoes import adaptar, disciplina_do_professor
 
 SENHA_PADRAO = "solution123"
 
@@ -85,6 +88,61 @@ PERFIS = {
         "estrategias": "Duplas fixas e um papel definido em cada atividade.",
     },
 }
+
+# Materiais de exemplo (texto colado, sem arquivo) e para quem foram adaptados.
+MATERIAIS = [
+    {
+        "professor": "francisco@escola.com",
+        "titulo": "Fotossíntese",
+        "turma": "7º B",
+        "texto": (
+            "Fotossíntese\n\n"
+            "A fotossíntese é o processo pelo qual as plantas produzem o próprio alimento. Ela acontece "
+            "principalmente nas folhas, dentro de estruturas chamadas cloroplastos, que contêm um pigmento "
+            "verde chamado clorofila, responsável por captar a energia da luz do sol.\n\n"
+            "Para fazer a fotossíntese, a planta precisa de três ingredientes: água, gás carbônico e luz. "
+            "A água é absorvida pelas raízes; o gás carbônico entra pelas folhas.\n\n"
+            "No final do processo, a planta produz glicose, que serve de alimento, e libera oxigênio no ar. "
+            "Por isso as plantas são tão importantes para a vida na Terra!"
+        ),
+        # aluno, formato, quantas versões, revisada?
+        "adaptacoes": [
+            ("Ana Beatriz", "simples", 1, True),
+            ("Lucas Martins", "resumo", 2, False),
+            ("Gabriel Souza", "audio", 1, False),
+        ],
+    },
+    {
+        "professor": "francisco@escola.com",
+        "titulo": "O ciclo da água",
+        "turma": "7º A",
+        "texto": (
+            "O ciclo da água\n\n"
+            "A água do planeta está sempre mudando de lugar e de estado. O calor do sol aquece rios, lagos e "
+            "mares, e parte dessa água evapora e sobe como vapor.\n\n"
+            "Lá em cima, o vapor esfria e forma pequenas gotas, que se juntam nas nuvens. Esse passo se chama "
+            "condensação.\n\n"
+            "Quando as gotas ficam pesadas, caem como chuva, neve ou granizo. É a precipitação.\n\n"
+            "A água da chuva escorre para os rios ou entra no solo, e o ciclo recomeça."
+        ),
+        "adaptacoes": [("Marina Oliveira", "visual", 1, True)],
+    },
+    {
+        "professor": "helena@escola.com",
+        "titulo": "Frações no dia a dia",
+        "turma": "7º A",
+        "texto": (
+            "Frações no dia a dia\n\n"
+            "Uma fração mostra uma parte de um todo. Se uma pizza é cortada em 8 pedaços iguais e você come 3, "
+            "você comeu 3/8 da pizza.\n\n"
+            "O número de baixo, o denominador, diz em quantas partes iguais o todo foi dividido. O número de "
+            "cima, o numerador, diz quantas dessas partes foram usadas.\n\n"
+            "Frações aparecem em receitas, no relógio e no dinheiro. Meia hora é 1/2 de uma hora, e 25 centavos "
+            "são 1/4 de um real."
+        ),
+        "adaptacoes": [("Sofia Costa", "audio", 1, False), ("Henrique Lima", "resumo", 1, False)],
+    },
+]
 
 
 class Command(BaseCommand):
@@ -153,7 +211,32 @@ class Command(BaseCommand):
                 aluno.atencao_marcada_por = coordenacao
             aluno.save()
 
+        self.criar_materiais(usuarios, turmas)
+
         self.stdout.write(self.style.SUCCESS("Dados de demonstração prontos."))
         self.stdout.write(f"Senha de todos os usuários novos: {senha}")
         for email, _, papel, _ in USUARIOS:
             self.stdout.write(f"  {Papel(papel).label:<24} {email}")
+
+    def criar_materiais(self, usuarios, turmas):
+        """Materiais já adaptados (entregas #7 e #8). Só cria as adaptações que faltam."""
+        for dados in MATERIAIS:
+            professor = usuarios[dados["professor"]]
+            material, _ = Material.objects.get_or_create(
+                titulo=dados["titulo"],
+                professor=professor,
+                defaults={
+                    "texto_extraido": dados["texto"],
+                    "disciplina_id": disciplina_do_professor(professor, turmas[dados["turma"]]),
+                },
+            )
+            for nome, formato, versoes, revisada in dados["adaptacoes"]:
+                aluno = Aluno.objects.filter(nome=nome).first()
+                tipo = TipoAdaptacao.objects.get(slug=formato)
+                if not aluno or Adaptacao.objects.filter(material=material, aluno=aluno, tipo=tipo).exists():
+                    continue
+                for _ in range(versoes):
+                    adaptacao = adaptar(material, aluno, tipo, professor)
+                if revisada:
+                    adaptacao.revisado_em = timezone.now()
+                    adaptacao.save(update_fields=["revisado_em"])

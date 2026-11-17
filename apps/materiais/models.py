@@ -22,10 +22,16 @@ class MaterialQuerySet(models.QuerySet):
 
 
 class Material(ModeloBase):
-    """O arquivo original que o professor envia (ex.: aula.pdf)."""
+    """
+    O conteúdo que o professor envia na tela Adaptar (entrega #7): um arquivo
+    (PDF, Word ou .txt) ou um texto colado. O texto fica guardado para gerar
+    outras adaptações sem enviar o arquivo de novo.
+    """
 
     titulo = models.CharField("título", max_length=200)
-    arquivo = models.FileField("arquivo", upload_to="materiais/%Y/%m/")
+    arquivo = models.FileField(
+        "arquivo", upload_to="materiais/%Y/%m/", blank=True, help_text="Vazio quando o texto foi colado na tela."
+    )
     texto_extraido = models.TextField("texto extraído", blank=True)
     professor = models.ForeignKey(
         settings.AUTH_USER_MODEL, verbose_name="professor", on_delete=models.PROTECT, related_name="materiais"
@@ -48,6 +54,10 @@ class Material(ModeloBase):
 
     def __str__(self):
         return self.titulo
+
+    @property
+    def nome_arquivo(self):
+        return self.arquivo.name.rsplit("/", 1)[-1] if self.arquivo else ""
 
 
 class AdaptacaoQuerySet(models.QuerySet):
@@ -85,6 +95,8 @@ class Adaptacao(ModeloBase):
         "gerado por", max_length=80, default="simulada", help_text='"simulada" ou o nome do modelo de IA.'
     )
     foi_util = models.BooleanField("foi útil?", null=True, blank=True)
+    # Entrega #8: o professor revisa o texto gerado antes de usar (Termos, seção 6).
+    revisado_em = models.DateTimeField("revisado em", null=True, blank=True)
     criado_por = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name="criado por",
@@ -103,3 +115,20 @@ class Adaptacao(ModeloBase):
 
     def __str__(self):
         return f"{self.material} · {self.tipo} · {self.aluno} (v{self.versao})"
+
+    @property
+    def ia_simulada(self):
+        return self.gerado_por == "simulada"
+
+    def proxima_versao(self):
+        """Número da próxima versão deste material, para este aluno e formato."""
+        return proxima_versao(self.material, self.aluno, self.tipo)
+
+
+def proxima_versao(material, aluno, tipo):
+    ultima = (
+        Adaptacao.objects.filter(material=material, aluno=aluno, tipo=tipo)
+        .aggregate(maior=models.Max("versao"))
+        .get("maior")
+    )
+    return (ultima or 0) + 1

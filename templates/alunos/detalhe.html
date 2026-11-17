@@ -126,14 +126,17 @@
     {% if adaptacoes %}
       <ul class="lista-simples">
         {% for a in adaptacoes %}
-          <li><a href="{% url 'materiais:adaptacao' a.pk %}">{{ a.material.titulo }}</a> · {{ a.tipo.nome }} · {{ a.criado_em|date:"d/m/Y" }}</li>
+          <li>
+            <a href="{% url 'materiais:adaptacao' a.pk %}">{{ a.material.titulo }}</a> · {{ a.tipo.nome }}{% if a.versao > 1 %} · versão {{ a.versao }}{% endif %}
+            · {{ a.criado_em|date:"d/m/Y" }}{% if a.revisado_em %} · revisada{% endif %}
+          </li>
         {% endfor %}
       </ul>
     {% else %}
-      <p class="vazio">
-        Nenhum material adaptado para este aluno ainda.
-        {% if e_professor and aluno.ativo %}<a href="{% url 'materiais:adaptar' %}?aluno={{ aluno.pk }}">Adaptar um material</a>.{% endif %}
-      </p>
+      <p class="vazio">Nenhum material adaptado para este aluno ainda.</p>
+    {% endif %}
+    {% if e_professor and aluno.ativo %}
+      <a class="botao botao--secundario" href="{% url 'materiais:adaptar' %}?aluno={{ aluno.pk }}">Adaptar um material</a>
     {% endif %}
   </section>
 
