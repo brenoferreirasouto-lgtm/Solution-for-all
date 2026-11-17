@@ -2,7 +2,7 @@
 Telas de alunos.
 
 Entrega #5: cadastro, edição, perfil e arquivamento. Entrega #6: marcar quem
-precisa de atenção. A busca e os filtros da lista ficam para a entrega #10.
+precisa de atenção. Entrega #10: busca por nome ou turma e filtro por necessidade na lista.
 
 Professor vê só os alunos vinculados a ele; coordenação e núcleo veem todos.
 Cadastrar, editar, marcar atenção e gerar o plano com IA: coordenação e
@@ -19,8 +19,9 @@ from apps.contas.models import Papel
 from apps.core.permissoes import COORDENACAO, GESTAO, TODOS, PapelRequeridoMixin
 from apps.materiais.models import Adaptacao
 
+from .busca import filtrar, limpar_termo
 from .forms import AlunoForm, AtencaoForm
-from .models import Aluno
+from .models import Aluno, Necessidade
 
 
 class AlunosVisiveisMixin:
@@ -29,7 +30,13 @@ class AlunosVisiveisMixin:
 
 
 class AlunoListaView(PapelRequeridoMixin, TemplateView):
-    """Lista simples para chegar aos perfis. A lupa de busca e os filtros são da entrega #10."""
+    """
+    Lista de alunos com a lupa de busca (entrega #10).
+
+    /alunos/?q=ana&necessidade=tea: o texto procura no nome e na turma (sem
+    acento), e a necessidade filtra pelo catálogo. O professor só enxerga, e
+    portanto só encontra, os alunos vinculados a ele.
+    """
 
     papeis = TODOS
     template_name = "alunos/lista.html"
@@ -38,11 +45,16 @@ class AlunoListaView(PapelRequeridoMixin, TemplateView):
         contexto = super().get_context_data(**kwargs)
         usuario = self.request.user
         gestao = usuario.papel in GESTAO
-        alunos = list(
-            Aluno.objects.visiveis_para(usuario)
-            .select_related("turma")
-            .prefetch_related("necessidades")
-            .order_by("nome")
+
+        termo = limpar_termo(self.request.GET.get("q"))
+        necessidade = Necessidade.objects.filter(slug=self.request.GET.get("necessidade", "")).first()
+
+        consulta = Aluno.objects.visiveis_para(usuario)
+        if necessidade:
+            consulta = consulta.filter(necessidades=necessidade)
+        alunos = filtrar(
+            consulta.select_related("turma").prefetch_related("necessidades").order_by("nome"),
+            termo,
         )
         ativos = [a for a in alunos if a.ativo]
         contexto.update(
@@ -56,6 +68,10 @@ class AlunoListaView(PapelRequeridoMixin, TemplateView):
             ativos=ativos,
             arquivados=[a for a in alunos if not a.ativo] if gestao else [],
             pode_cadastrar=gestao,
+            q=termo,
+            necessidade=necessidade,
+            necessidades=Necessidade.objects.all(),
+            filtrando=bool(termo or necessidade),
         )
         return contexto
 

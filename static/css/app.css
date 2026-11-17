@@ -296,6 +296,7 @@ main:focus {
 }
 
 .topo__voltar,
+.topo__busca,
 .topo__menu,
 .menu__fechar {
   display: inline-grid;
@@ -314,6 +315,7 @@ main:focus {
 }
 
 .topo__voltar:hover,
+.topo__busca:hover,
 .topo__menu:hover,
 .menu__fechar:hover {
   background: var(--cor-fundo);
@@ -695,6 +697,7 @@ main:focus {
   }
 
   .menu__fechar,
+  .topo__busca,
   .topo__menu,
   .menu-fundo {
     display: none !important;
@@ -1500,5 +1503,163 @@ main:focus {
 
   .folha__nota {
     font-size: 9pt;
+  }
+}
+
+/* Busca de alunos: lupa no topo, caixa e lista no menu, formulário em /alunos/ (entrega #10) */
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.busca {
+  position: relative;
+}
+
+.busca .icone-lupa {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  color: var(--cor-texto-suave);
+  pointer-events: none;
+}
+
+.busca input {
+  width: 100%;
+  min-height: var(--altura-toque);
+  padding: 10px 12px 10px 38px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-pequeno);
+  background: var(--cor-superficie);
+  color: inherit;
+  font: inherit;
+}
+
+.busca input:focus {
+  border-color: var(--cor-primaria);
+}
+
+.menu__alunos {
+  display: flex;
+  flex: 1 1 200px;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--cor-borda);
+}
+
+.menu__titulo {
+  margin: 0;
+  padding: 0 12px;
+  color: var(--cor-texto-suave);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.menu__alunos-lista {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 64px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.menu__alunos-lista li[hidden] {
+  display: none;
+}
+
+.menu__alunos-lista a {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: var(--altura-toque);
+  padding: 4px 12px;
+  border-radius: var(--raio-pequeno);
+  color: var(--cor-texto);
+  line-height: 1.3;
+  text-decoration: none;
+}
+
+.menu__alunos-lista a:hover {
+  background: var(--cor-fundo);
+}
+
+.menu__aluno-turma {
+  color: var(--cor-texto-suave);
+  font-size: 0.8125rem;
+}
+
+.menu__alunos-vazio {
+  margin: 0;
+  padding: 0 12px;
+  color: var(--cor-texto-suave);
+  font-size: 0.875rem;
+}
+
+.menu__alunos-todos {
+  padding: 0 12px 4px;
+  font-size: 0.875rem;
+}
+
+.busca-pagina {
+  display: grid;
+  gap: 12px 16px;
+  align-items: end;
+  margin-bottom: 20px;
+  padding: 16px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+}
+
+.busca-pagina label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.busca-pagina select {
+  width: 100%;
+  min-height: var(--altura-toque);
+  padding: 10px 12px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-pequeno);
+  background: var(--cor-superficie);
+  color: inherit;
+  font: inherit;
+}
+
+.busca-pagina select:focus {
+  border-color: var(--cor-primaria);
+}
+
+.busca-pagina__acoes {
+  display: flex;
+  gap: 8px;
+}
+
+.busca-resultado {
+  margin: 0 0 16px;
+  color: var(--cor-texto-suave);
+}
+
+@media (min-width: 768px) {
+  .busca-pagina {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto;
   }
 }
