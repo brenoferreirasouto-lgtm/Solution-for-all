@@ -1,0 +1,19 @@
+{# Um aluno nas listas. Uso: {% include "alunos/_item.html" with aluno=aluno detalhe="motivo" %} #}
+<li>
+  <a class="aluno-item" href="{% url 'alunos:detalhe' aluno.pk %}">
+    <span class="avatar" aria-hidden="true">{{ aluno.iniciais }}</span>
+    <span class="aluno-item__dados">
+      <strong>{{ aluno.nome }}</strong>
+      <span>
+        {{ aluno.turma.nome }}{% if detalhe == "motivo" and aluno.motivo_atencao %} · {{ aluno.motivo_atencao }}{% endif %}
+      </span>
+      {% if detalhe != "motivo" %}
+        <span class="selos">
+          {% for necessidade in aluno.necessidades.all %}<span class="selo">{{ necessidade.nome }}</span>{% endfor %}
+          {% if aluno.precisa_atencao %}<span class="selo selo--atencao">Atenção</span>{% endif %}
+        </span>
+      {% endif %}
+    </span>
+    <svg class="aluno-item__seta" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </a>
+</li>

@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.db.models import F, Q
+from django.utils import timezone
 
 from apps.contas.models import Papel
 from apps.core.models import ModeloBase
@@ -74,6 +75,15 @@ class DiaSemana(models.IntegerChoices):
     SABADO = 5, "Sábado"
 
 
+class HorarioAulaQuerySet(models.QuerySet):
+    def do_dia(self, dia_semana):
+        return self.filter(dia_semana=dia_semana)
+
+    def de_hoje(self):
+        """Para o card "Aulas de hoje" dos painéis (entregas #9 e #12)."""
+        return self.do_dia(timezone.localdate().weekday())
+
+
 class HorarioAula(ModeloBase):
     """Grade semanal. O card "Aulas de hoje" filtra pelo dia da semana."""
 
@@ -83,6 +93,8 @@ class HorarioAula(ModeloBase):
     dia_semana = models.PositiveSmallIntegerField("dia da semana", choices=DiaSemana.choices)
     hora_inicio = models.TimeField("início")
     hora_fim = models.TimeField("fim")
+
+    objects = HorarioAulaQuerySet.as_manager()
 
     class Meta:
         verbose_name = "horário de aula"

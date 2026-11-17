@@ -1,0 +1,7 @@
+{# Caixa de marcar sozinha (ex.: "Este aluno precisa de atenção"): o rótulo fica ao lado. #}
+{# Uso: {% include "partials/_campo_marcar.html" with campo=form.plano_ia %} #}
+<div class="campo campo--marcar{% if campo.errors %} campo--erro{% endif %}">
+  <label for="{{ campo.id_for_label }}">{{ campo }} {{ campo.label }}</label>
+  {% if campo.help_text %}<p class="campo__ajuda">{{ campo.help_text }}</p>{% endif %}
+  {% for erro in campo.errors %}<p class="campo__erro">{{ erro }}</p>{% endfor %}
+</div>

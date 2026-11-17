@@ -10,6 +10,7 @@ from django.urls import reverse
 
 from apps.alunos.models import Aluno, TipoAdaptacao
 from apps.contas.models import Papel, Usuario
+from apps.core import documentos
 from apps.escola.models import DiaSemana, Disciplina, HorarioAula, Lecionacao, Turma
 from apps.materiais.models import Adaptacao, Material
 from apps.materiais.services.ia import gerar_adaptacao
@@ -53,9 +54,9 @@ class EsqueletoTestCase(TestCase):
 PAGINAS = [
     ("painel:painel", {}, (C, P, N)),
     ("alunos:lista", {}, (C, P, N)),
-    ("alunos:novo", {}, (C,)),
+    ("alunos:novo", {}, (C, N)),
     ("alunos:detalhe", {"pk": "aluno"}, (C, P, N)),
-    ("alunos:editar", {"pk": "aluno"}, (C,)),
+    ("alunos:editar", {"pk": "aluno"}, (C, N)),
     ("escola:equipe", {}, (C,)),
     ("escola:coordenador_novo", {}, (C,)),
     ("escola:professor_novo", {}, (C,)),
@@ -74,6 +75,8 @@ PAGINAS = [
 # Ações que mudam dados: só POST
 ACOES = [
     ("alunos:arquivar", {"pk": "aluno"}, (C,)),
+    ("alunos:atencao", {"pk": "aluno"}, (C, N)),
+    ("alunos:plano", {"pk": "aluno"}, (C, N)),
     ("escola:membro_desativar", {"pk": "membro_alvo"}, (C,)),
     ("escola:horario_excluir", {"pk": "horario"}, (C,)),
     ("materiais:adaptacao_refazer", {"pk": "adaptacao"}, (P,)),
@@ -181,12 +184,21 @@ class MenuTests(EsqueletoTestCase):
 
 class DocumentosLegaisTests(EsqueletoTestCase):
     def test_documentos_abrem_sem_login_com_versao(self):
-        for rota, titulo in (("core:termos", "Termos de Uso"), ("core:privacidade", "Política de Privacidade")):
+        casos = (
+            ("core:termos", "Termos de Uso", documentos.TERMOS_DE_USO),
+            ("core:privacidade", "Política de Privacidade", documentos.POLITICA_DE_PRIVACIDADE),
+        )
+        for rota, titulo, documento in casos:
             with self.subTest(rota=rota):
                 resposta = self.client.get(reverse(rota))
                 self.assertContains(resposta, f"<h1>{titulo}</h1>", html=True)
-                self.assertContains(resposta, "Versão 1.0")
-                self.assertContains(resposta, "23/10/2026")
+                self.assertContains(resposta, f"Versão {documento['versao']}")
+                self.assertContains(resposta, f"{documento['atualizado_em']:%d/%m/%Y}")
+
+    def test_politica_descreve_o_perfil_e_o_plano_com_ia(self):
+        resposta = self.client.get(reverse("core:privacidade"))
+        self.assertContains(resposta, "Perfil de aprendizagem")
+        self.assertContains(resposta, "Plano com IA")
 
     def test_login_avisa_e_linka_os_documentos(self):
         resposta = self.client.get(reverse("contas:entrar"))

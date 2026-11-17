@@ -21,3 +21,5 @@ class AlunoAdmin(admin.ModelAdmin):
     list_filter = ("turma", "necessidades", "precisa_atencao", "ativo")
     search_fields = ("nome",)
     filter_horizontal = ("necessidades", "formatos", "professores")
+    # Preenchidos pelo app (Plano com IA e marcação de atenção), não à mão.
+    readonly_fields = ("plano_ia_texto", "plano_ia_gerado_em", "atencao_marcada_em", "atencao_marcada_por", "criado_por")

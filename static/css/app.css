@@ -19,6 +19,9 @@
   --cor-erro: #b42318;
   --cor-erro-fundo: #fdecea;
   --cor-aviso-fundo: #fff6e5;
+  --cor-aviso: #7a4b00; /* texto sobre --cor-aviso-fundo */
+  --cor-aviso-borda: #e0a43a;
+  --cor-aviso-borda-clara: #f3dcae;
 
   --fonte: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --raio: 12px;
@@ -820,4 +823,393 @@ main:focus {
 .equipe-vazio {
   margin: 0;
   color: var(--cor-texto-suave);
+}
+
+/* Alunos e horários (entregas #5 e #6) ------------------------------------ */
+.pagina__topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px 24px;
+  margin-bottom: 24px;
+}
+
+.pagina__topo .pagina__subtitulo {
+  margin-bottom: 0;
+}
+
+.pagina--perfil {
+  max-width: 720px;
+}
+
+.bloco {
+  margin-bottom: 28px;
+}
+
+.bloco__titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.bloco--arquivados summary {
+  cursor: pointer;
+  min-height: var(--altura-toque);
+}
+
+.contador {
+  display: inline-grid;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 8px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--cor-primaria-clara);
+  color: var(--cor-primaria-escura);
+  font-size: 0.8125rem;
+}
+
+.bloco--atencao .contador {
+  background: var(--cor-aviso-fundo);
+  color: var(--cor-aviso);
+}
+
+.lista-alunos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.aluno-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 10px 14px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+  color: inherit;
+  text-decoration: none;
+}
+
+.aluno-item:hover {
+  border-color: var(--cor-primaria);
+}
+
+.bloco--atencao .aluno-item {
+  border-left: 4px solid var(--cor-aviso-borda);
+}
+
+.aluno-item__dados {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.aluno-item__dados > span {
+  color: var(--cor-texto-suave);
+  font-size: 0.875rem;
+}
+
+.aluno-item__seta {
+  flex: none;
+  color: var(--cor-texto-suave);
+}
+
+.avatar {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--cor-primaria-clara);
+  color: var(--cor-primaria-escura);
+  font-weight: 700;
+}
+
+.avatar--grande {
+  width: 64px;
+  height: 64px;
+  font-size: 1.375rem;
+}
+
+.selos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 0;
+}
+
+.selo--atencao {
+  background: var(--cor-aviso-fundo);
+  color: var(--cor-aviso);
+}
+
+.vazio {
+  margin: 0;
+  color: var(--cor-texto-suave);
+}
+
+.perfil-topo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.perfil-topo__dados {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.perfil-topo__turma {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--cor-texto-suave);
+}
+
+.acoes-linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.cartao {
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+}
+
+.cartao > * + * {
+  margin-top: 12px;
+}
+
+.cartao--atencao {
+  border-color: var(--cor-aviso-borda-clara);
+  background: var(--cor-aviso-fundo);
+}
+
+.cartao__titulo {
+  margin: 0;
+  font-size: 1.0625rem;
+}
+
+.cartao__subtitulo {
+  margin-bottom: 4px;
+  font-size: 0.9375rem;
+}
+
+.cartao__destaque {
+  font-weight: 600;
+}
+
+.cartao__meta {
+  color: var(--cor-texto-suave);
+  font-size: 0.875rem;
+}
+
+.cartao p {
+  margin-bottom: 0;
+}
+
+.dados {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 12px 0 0;
+}
+
+.dados dt {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.dados dd {
+  margin: 2px 0 0;
+}
+
+.lista-simples {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+
+.lista-simples li + li {
+  margin-top: 4px;
+}
+
+.plano-texto p {
+  margin: 0 0 8px;
+}
+
+.atencao-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.perfil-rodape {
+  color: var(--cor-texto-suave);
+  font-size: 0.875rem;
+}
+
+/* Grupos do formulário de aluno */
+.grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+}
+
+.grupo legend {
+  padding: 0 6px;
+  font-weight: 700;
+}
+
+.grupo__nota {
+  margin: 0;
+  color: var(--cor-texto-suave);
+  font-size: 0.875rem;
+}
+
+.campo--marcar label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--altura-toque);
+  margin: 0;
+  font-size: 1rem;
+}
+
+.campo ul,
+.campo div:has(> div > label > input[type="checkbox"]) {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Grade de horários (entrega #6) */
+.filtro-turma {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.filtro-turma .campo {
+  min-width: 200px;
+}
+
+.grade {
+  display: grid;
+  gap: 12px;
+}
+
+.grade__dia {
+  padding: 12px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+}
+
+.grade__dia--hoje {
+  border-color: var(--cor-primaria);
+  box-shadow: inset 0 3px 0 var(--cor-primaria);
+}
+
+.grade__nome-dia {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.grade__aulas {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A aula inteira é o link para editar; excluir fica dentro da edição. */
+.aula {
+  display: block;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--raio-pequeno);
+  background: var(--cor-fundo);
+  color: inherit;
+  text-decoration: none;
+}
+
+.aula:hover {
+  border-color: var(--cor-primaria);
+}
+
+.aula__hora {
+  display: block;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.aula__info {
+  display: block;
+  color: var(--cor-texto-suave);
+  font-size: 0.875rem;
+}
+
+.sem-quebra {
+  white-space: nowrap;
+}
+
+.formulario__excluir {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--cor-borda);
+}
+
+.formulario__linha {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .grade {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Uma coluna por dia que aparece (sábado só quando tem aula). */
+@media (min-width: 1280px) {
+  .grade {
+    grid-template-columns: none;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+  }
 }

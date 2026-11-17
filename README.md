@@ -4,7 +4,7 @@ App web para professores adaptarem materiais didáticos com IA para estudantes n
 
 Projeto da cadeira **Projetos 1** (Sistemas de Informação, CESAR School), Grupo 7: Francisco Costa, Matheus Nader, Breno Souto, José Victor e Victor Poggi.
 
-> **Status: entregas 1, 3 e 4.** O projeto roda, o banco e o login funcionam, e a coordenação já cadastra coordenadores, professores e membros do núcleo (tela **Equipe**). As demais telas ainda mostram "Em construção" e dizem qual entrega vai construí-las.
+> **Status: entregas 1, 3, 4, 5 e 6.** O projeto roda, o banco e o login funcionam. A coordenação cadastra a equipe (tela **Equipe**) e a grade de **Horários**; coordenação e núcleo cadastram **Alunos** com perfil cognitivo, sugestões da IA e a lista de quem precisa de atenção. As demais telas ainda mostram "Em construção" e dizem qual entrega vai construí-las.
 
 ---
 
@@ -50,8 +50,9 @@ Todos com a senha `solution123`. Os dados são fictícios (os nomes de alunos s�
 | Papel | E-mail | O que vê |
 | --- | --- | --- |
 | Coordenador | `coordenacao@escola.com` | Tudo, incluindo Equipe, Horários e Catálogos (`/admin/`) |
-| Professor | `francisco@escola.com` | Os próprios alunos e materiais, e a tela Adaptar material |
-| Núcleo psicopedagógico | `nucleo@escola.com` | Todos os alunos e materiais, e os Catálogos (cadastra e edita, sem excluir) |
+| Professor | `francisco@escola.com` | Os próprios alunos (7º A e 7º B) e materiais, e a tela Adaptar material |
+| Professor | `helena@escola.com` | Só os alunos do 7º A, onde ela dá Matemática |
+| Núcleo psicopedagógico | `nucleo@escola.com` | Todos os alunos e materiais; cadastra e edita alunos e os Catálogos (sem excluir) |
 
 ---
 
@@ -79,15 +80,15 @@ Solution-for-all/
 │   ├── core/            # código comum: permissões, menu, página "em construção", popular_demo
 │   ├── contas/          # Usuario (login por e-mail + papel), entrar, sair, recuperar senha
 │   ├── escola/          # Turma, Disciplina, Lecionacao, HorarioAula + telas de equipe e horários
-│   ├── alunos/          # Aluno, Necessidade, TipoAdaptacao + telas de alunos
-│   ├── materiais/       # Material, Adaptacao + services/ia.py (IA simulada)
+│   ├── alunos/          # Aluno (perfil cognitivo, plano com IA, atenção), Necessidade, TipoAdaptacao + telas
+│   ├── materiais/       # Material, Adaptacao + services/ia.py (IA simulada: adaptação e plano de apoio)
 │   └── painel/          # painel inicial de cada papel
 ├── templates/
 │   ├── base.html
 │   ├── layouts/         # auth.html (sem menu) e app.html (topo + menu)
-│   ├── partials/        # _topbar, _menu, _marca, _campo, _mensagens
-│   └── core/ contas/    # páginas
-└── static/              # css/app.css (cores e espaços), js/menu.js, img/
+│   ├── partials/        # _topbar, _menu, _marca, _campo, _campo_marcar, _mensagens
+│   └── core/ contas/ escola/ alunos/   # páginas
+└── static/              # css/app.css (cores e espaços), js/menu.js, js/confirmar.js, img/
 ```
 
 Ordem de dependência entre os apps: `contas` → `escola` → `alunos` → `materiais` → `painel`.
@@ -96,9 +97,9 @@ Ordem de dependência entre os apps: `contas` → `escola` → `alunos` → `mat
 
 | Papel | Pode |
 | --- | --- |
-| Coordenador | Cadastrar coordenadores, professores, membros do núcleo, alunos e horários; ver tudo; Catálogos completos |
-| Professor | Ver os alunos vinculados a ele, adaptar materiais, ver as próprias adaptações |
-| Núcleo psicopedagógico | Acompanhar todos os alunos, materiais e adaptações; cadastrar e editar nos Catálogos (alunos, turmas, matérias, necessidades, formatos, horários), sem excluir |
+| Coordenador | Cadastrar coordenadores, professores, membros do núcleo, alunos e horários; arquivar alunos; ver tudo; Catálogos completos |
+| Professor | Ver os alunos vinculados a ele (perfil e sugestões da IA, só leitura), adaptar materiais, ver as próprias adaptações |
+| Núcleo psicopedagógico | Acompanhar todos os alunos, materiais e adaptações; cadastrar e editar alunos e o perfil cognitivo; marcar quem precisa de atenção; cadastrar e editar nos Catálogos (alunos, turmas, matérias, necessidades, formatos, horários), sem excluir |
 
 **Catálogos (`/admin/`):** o acesso vem do papel, não de marcar permissões à mão. Quem é coordenador ou núcleo ganha `is_staff` automaticamente ao ser salvo (e perde se mudar para professor), e as permissões de catálogo ficam em `apps/contas/models.py` (`ACOES_CATALOGO`). Para mudar o que cada papel pode fazer lá, edite esse dicionário.
 
@@ -114,27 +115,30 @@ Cada view declara os papéis aceitos (`papeis = COORDENACAO`, `PROFESSOR`, `TODO
 | `/sair/` (POST) | Sair | Logado | pronta |
 | `/senha/recuperar/`, `/senha/codigo/`, `/senha/nova/` | Recuperar senha por código no e-mail | Visitante | #13 |
 | `/painel/` | Painel do professor / da coordenação / do núcleo | Logado | #9 / #12 |
-| `/alunos/?q=&necessidade=` | Lista de alunos com busca | Todos | #10 |
-| `/alunos/novo/` | Novo aluno | Coordenador | #5 |
-| `/alunos/<id>/` | Perfil e histórico do aluno | Todos (professor só os seus) | #5 |
-| `/alunos/<id>/editar/` | Editar aluno | Coordenador | #5 |
-| `/alunos/<id>/arquivar/` (POST) | Arquivar aluno | Coordenador | #5 |
+| `/alunos/` | Lista de alunos, com "Precisam de atenção" no topo | Todos (professor só os seus) | #5/#6 (pronta) |
+| `/alunos/?q=&necessidade=` | Busca e filtros na lista | Todos | #10 |
+| `/alunos/novo/` | Novo aluno com perfil cognitivo | Coordenador e núcleo | #5 (pronta) |
+| `/alunos/<id>/` | Perfil, sugestões da IA e histórico do aluno | Todos (professor só os seus) | #5 (pronta) |
+| `/alunos/<id>/editar/` | Editar aluno | Coordenador e núcleo | #5 (pronta) |
+| `/alunos/<id>/arquivar/` (POST) | Arquivar ou reativar aluno | Coordenador | #5 (pronta) |
+| `/alunos/<id>/plano/` (POST) | Gerar de novo as sugestões da IA | Coordenador e núcleo | #5 (pronta) |
+| `/alunos/<id>/atencao/` (POST) | Marcar ou tirar da lista de atenção | Coordenador e núcleo | #6 (pronta) |
 | `/equipe/` | Coordenadores, professores e membros do núcleo | Coordenador | #3/#4 (pronta) |
 | `/equipe/coordenadores/novo/` | Novo coordenador | Coordenador | #3 (pronta) |
 | `/equipe/professores/novo/` | Novo professor | Coordenador | #4 (pronta) |
 | `/equipe/nucleo/novo/` | Novo membro do núcleo | Coordenador | #4 (pronta) |
 | `/equipe/<id>/editar/` | Editar membro | Coordenador | #4 (pronta) |
 | `/equipe/<id>/desativar/` (POST) | Desativar ou reativar acesso | Coordenador | #4 (pronta) |
-| `/horarios/` | Grade de horários | Coordenador | #6 |
-| `/horarios/novo/`, `/horarios/<id>/editar/` | Cadastrar e editar horário | Coordenador | #6 |
-| `/horarios/<id>/excluir/` (POST) | Excluir horário | Coordenador | #6 |
+| `/horarios/?turma=` | Grade semanal, filtrável por turma | Coordenador | #6 (pronta) |
+| `/horarios/novo/`, `/horarios/<id>/editar/` | Cadastrar e editar horário (sem choque de turma ou professor) | Coordenador | #6 (pronta) |
+| `/horarios/<id>/excluir/` (POST) | Excluir horário | Coordenador | #6 (pronta) |
 | `/materiais/adaptar/?aluno=&material=` | Adaptar material com IA | Professor | #7 |
 | `/materiais/` | Lista de materiais | Todos | #8 |
 | `/materiais/<id>/` | Material e suas adaptações | Todos | #8 |
 | `/adaptacoes/<id>/` | Material pronto (Ouvir, Refazer, Exportar) | Todos | #8 |
 | `/adaptacoes/<id>/refazer/` (POST) | Gerar nova versão | Professor que criou | #8 |
 | `/adaptacoes/<id>/exportar/` | Página para imprimir ou salvar em PDF | Todos | #8 |
-| `/privacidade/` | Política de Privacidade (versão 1.0) | Visitante | pronta |
+| `/privacidade/` | Política de Privacidade (versão 1.1) | Visitante | pronta |
 | `/termos/` | Termos de Uso (versão 1.0) | Visitante | pronta |
 | `/admin/` | Catálogos: turmas, disciplinas, necessidades, formatos | Coordenador | pronta |
 
@@ -144,8 +148,8 @@ Nos templates, use sempre o nome da rota (`{% url 'alunos:detalhe' aluno.pk %}`)
 
 ## Como pegar uma entrega
 
-1. Atualize o `main` e crie uma branch: `git checkout -b entrega-05-cadastro-alunos`.
-2. Ache a view "em construção" da tela no `views.py` do app (ex.: `AlunoNovoView` em `apps/alunos/views.py`).
+1. Atualize o `main` e crie uma branch: `git checkout -b entrega-07-adaptar-material`.
+2. Ache a view "em construção" da tela no `views.py` do app (ex.: `AdaptarView` em `apps/materiais/views.py`).
 3. Troque pela view de verdade **mantendo a URL, o nome da rota e os `papeis`**. Os testes em `apps/core/tests.py` checam isso.
 4. Crie o template da tela estendendo `layouts/app.html` e usando os partials.
 5. Mudou um model? Rode `python manage.py makemigrations` e envie a migration junto.
@@ -156,6 +160,7 @@ Nos templates, use sempre o nome da rota (`{% url 'alunos:detalhe' aluno.pk %}`)
 - **Não troque o `AUTH_USER_MODEL`.** O usuário customizado (`contas.Usuario`) já está na primeira migration.
 - **Só dados fictícios.** Necessidades como TEA e TDAH são dados de saúde de crianças (dado sensível pela LGPD).
 - **Termos e Política valem como promessa.** O texto publicado em `/termos/` e `/privacidade/` (em `templates/core/`) descreve o que o app faz hoje. Mudou o comportamento (ex.: passou a guardar logs, ligou uma API de IA, escolheu a hospedagem)? Atualize o texto, a versão e a data em `apps/core/documentos.py`. Os rascunhos originais em PDF estão em `Documents/`.
-- **A IA nunca recebe o nome do aluno.** `apps/materiais/services/ia.py` recebe só o texto do material e o formato. Hoje a IA é simulada; a API gratuita é testada à parte (entrega #2).
+- **A IA nunca recebe o nome do aluno.** `apps/materiais/services/ia.py` recebe só o texto do material e o formato (adaptação) ou só as necessidades e os formatos marcados (Plano com IA, `gerar_plano_apoio`). O perfil escrito pela escola e as observações também não vão para a IA. Hoje a IA é simulada; a API gratuita é testada à parte (entrega #2).
+- **Perfil cognitivo não é prontuário.** Os campos guardam o que a escola observa em sala (como aprende, dificuldades, estratégias). Nada de diagnóstico, CID ou dado de laudo.
 - **Ações que mudam dados usam POST** com `{% csrf_token %}`, nunca um link.
 - **Cores só pelas variáveis** do topo de `static/css/app.css`. O verde `#17705F` passa no contraste com texto branco; o `#1C8874` do protótipo não.

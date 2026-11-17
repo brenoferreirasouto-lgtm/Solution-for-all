@@ -1,5 +1,5 @@
 """
-Cadastro da equipe pela coordenação (entregas #3 e #4).
+Cadastro da equipe pela coordenação (entregas #3 e #4) e horários das aulas (#6).
 
 Um formulário por papel: coordenador, professor e membro do núcleo. O papel
 vem da tela escolhida, nunca de um campo que a pessoa possa trocar.
@@ -7,11 +7,12 @@ vem da tela escolhida, nunca de um campo que a pessoa possa trocar.
 
 from django import forms
 from django.contrib.auth import get_user_model, password_validation
+from django.db.models import Q
 
 from apps.alunos.models import Aluno
 from apps.contas.models import Papel
 
-from .models import Disciplina, Lecionacao, Turma
+from .models import DiaSemana, Disciplina, HorarioAula, Lecionacao, Turma
 
 Usuario = get_user_model()
 
@@ -149,3 +150,94 @@ FORMULARIO_POR_PAPEL = {
     Papel.PROFESSOR: ProfessorForm,
     Papel.NUCLEO: NucleoForm,
 }
+
+
+class HorarioForm(forms.ModelForm):
+    """
+    Uma aula na grade semanal (entrega #6).
+
+    A tela pede turma, matéria e professor; a lecionação (quem ensina o quê
+    em qual turma) é criada se ainda não existir. Não deixa a mesma turma nem
+    o mesmo professor com duas aulas no mesmo horário.
+    """
+
+    turma = forms.ModelChoiceField(label="Turma", queryset=Turma.objects.none(), empty_label="Selecione")
+    disciplina = forms.ModelChoiceField(
+        label="Matéria",
+        queryset=Disciplina.objects.all(),
+        empty_label="Selecione",
+        help_text="Cadastre matérias novas em Catálogos.",
+    )
+    professor = forms.ModelChoiceField(label="Professor", queryset=Usuario.objects.none(), empty_label="Selecione")
+
+    field_order = ("turma", "disciplina", "professor", "dia_semana", "hora_inicio", "hora_fim")
+
+    class Meta:
+        model = HorarioAula
+        fields = ("dia_semana", "hora_inicio", "hora_fim")
+        labels = {"dia_semana": "Dia da semana", "hora_inicio": "Início", "hora_fim": "Fim"}
+        widgets = {
+            "hora_inicio": forms.TimeInput(attrs={"type": "time"}, format="%H:%M"),
+            "hora_fim": forms.TimeInput(attrs={"type": "time"}, format="%H:%M"),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        turmas = Q(ativo=True)
+        professores = Q(papel=Papel.PROFESSOR, is_active=True)
+        if self.instance.pk:
+            lecionacao = self.instance.lecionacao
+            self.initial.update(
+                turma=lecionacao.turma_id, disciplina=lecionacao.disciplina_id, professor=lecionacao.professor_id
+            )
+            # Mantém a turma e o professor atuais mesmo se tiverem sido desativados.
+            turmas |= Q(pk=lecionacao.turma_id)
+            professores |= Q(pk=lecionacao.professor_id)
+        self.fields["turma"].queryset = Turma.objects.filter(turmas)
+        self.fields["professor"].queryset = Usuario.objects.filter(professores).order_by("nome")
+        self.fields["dia_semana"].choices = [("", "Selecione"), *DiaSemana.choices]
+
+    def clean(self):
+        dados = super().clean()
+        inicio, fim = dados.get("hora_inicio"), dados.get("hora_fim")
+        if inicio and fim and fim <= inicio:
+            # Erro no campo: o Django então não repete o aviso da regra do banco.
+            self.add_error("hora_fim", "O fim precisa ser depois do início.")
+            return dados
+
+        dia, turma, professor = dados.get("dia_semana"), dados.get("turma"), dados.get("professor")
+        if dia is None or not (inicio and fim):
+            return dados
+        mesmo_horario = (
+            HorarioAula.objects.filter(dia_semana=dia, hora_inicio__lt=fim, hora_fim__gt=inicio)
+            .exclude(pk=self.instance.pk)
+            .select_related("lecionacao__turma", "lecionacao__disciplina", "lecionacao__professor")
+        )
+        if turma:
+            choque = mesmo_horario.filter(lecionacao__turma=turma).first()
+            if choque:
+                self.add_error(
+                    None,
+                    f"A turma {turma.nome} já tem {choque.lecionacao.disciplina} nesse horário "
+                    f"({choque.hora_inicio:%H:%M} às {choque.hora_fim:%H:%M}).",
+                )
+        if professor:
+            choque = mesmo_horario.filter(lecionacao__professor=professor).first()
+            if choque:
+                self.add_error(
+                    None,
+                    f"{professor.nome} já dá aula nesse horário: {choque.lecionacao.disciplina} na turma "
+                    f"{choque.lecionacao.turma.nome} ({choque.hora_inicio:%H:%M} às {choque.hora_fim:%H:%M}).",
+                )
+        return dados
+
+    def save(self, commit=True):
+        horario = super().save(commit=False)
+        horario.lecionacao, _ = Lecionacao.objects.get_or_create(
+            professor=self.cleaned_data["professor"],
+            turma=self.cleaned_data["turma"],
+            disciplina=self.cleaned_data["disciplina"],
+        )
+        if commit:
+            horario.save()
+        return horario

@@ -1,0 +1,145 @@
+{% extends "layouts/app.html" %}
+{# Entrega #5: perfil do aluno e histórico de adaptações. Entrega #6: atenção. #}
+
+{% block conteudo %}
+<div class="pagina pagina--perfil">
+  <div class="perfil-topo">
+    <span class="avatar avatar--grande" aria-hidden="true">{{ aluno.iniciais }}</span>
+    <div class="perfil-topo__dados">
+      <h1 class="pagina__titulo">{{ aluno.nome }}</h1>
+      <p class="perfil-topo__turma">
+        {{ aluno.turma }}
+        {% if not aluno.ativo %}<span class="selo selo--inativo">Arquivado</span>{% endif %}
+        {% if aluno.precisa_atencao %}<span class="selo selo--atencao">Precisa de atenção</span>{% endif %}
+      </p>
+    </div>
+  </div>
+
+  {% if pode_editar %}
+    <div class="acoes-linha">
+      <a class="botao botao--primario" href="{% url 'alunos:editar' aluno.pk %}">Editar perfil</a>
+      {% if pode_arquivar %}
+        <form method="post" action="{% url 'alunos:arquivar' aluno.pk %}"
+              {% if aluno.ativo %}data-confirmar="Arquivar {{ aluno.nome }}? O aluno sai das listas, mas o histórico fica guardado."{% endif %}>
+          {% csrf_token %}
+          <button class="botao botao--secundario" type="submit">{% if aluno.ativo %}Arquivar{% else %}Reativar{% endif %}</button>
+        </form>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {% if aluno.precisa_atencao or pode_editar %}
+    <section class="cartao{% if aluno.precisa_atencao %} cartao--atencao{% endif %}" aria-labelledby="titulo-atencao">
+      <h2 id="titulo-atencao" class="cartao__titulo">Atenção</h2>
+      {% if aluno.precisa_atencao %}
+        <p class="cartao__destaque">{{ aluno.motivo_atencao }}</p>
+        {% if aluno.atencao_marcada_em %}
+          <p class="cartao__meta">
+            Marcado em {{ aluno.atencao_marcada_em|date:"d/m/Y" }}{% if aluno.atencao_marcada_por %} por {{ aluno.atencao_marcada_por.nome }}{% endif %}.
+          </p>
+        {% endif %}
+        {% if pode_editar %}
+          <form method="post" action="{% url 'alunos:atencao' aluno.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="acao" value="desmarcar">
+            <button class="botao botao--secundario" type="submit">Tirar da lista de atenção</button>
+          </form>
+        {% endif %}
+      {% else %}
+        <p>Não está na lista de quem precisa de atenção.</p>
+        <form method="post" action="{% url 'alunos:atencao' aluno.pk %}" class="atencao-form">
+          {% csrf_token %}
+          <input type="hidden" name="acao" value="marcar">
+          <div class="campo">
+            <label for="motivo-atencao">Motivo</label>
+            <input id="motivo-atencao" name="motivo" maxlength="200" required
+                   placeholder="Ex.: voltou de afastamento e precisa retomar o conteúdo">
+          </div>
+          <button class="botao botao--secundario" type="submit">Marcar atenção</button>
+        </form>
+      {% endif %}
+    </section>
+  {% endif %}
+
+  <section class="cartao" aria-labelledby="titulo-necessidades">
+    <h2 id="titulo-necessidades" class="cartao__titulo">Necessidades e formatos</h2>
+    {% with necessidades=aluno.necessidades.all formatos=aluno.formatos.all %}
+      {% if necessidades %}
+        <p class="selos">{% for n in necessidades %}<span class="selo">{{ n.nome }}</span>{% endfor %}</p>
+      {% else %}
+        <p class="vazio">Nenhuma necessidade marcada.</p>
+      {% endif %}
+      {% if formatos %}
+        <h3 class="cartao__subtitulo">Formatos recomendados</h3>
+        <ul class="lista-simples">
+          {% for f in formatos %}<li><strong>{{ f.nome }}</strong>{% if f.descricao %}: {{ f.descricao }}{% endif %}</li>{% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+  </section>
+
+  <section class="cartao" aria-labelledby="titulo-perfil">
+    <h2 id="titulo-perfil" class="cartao__titulo">Perfil cognitivo</h2>
+    {% if aluno.tem_perfil %}
+      <dl class="dados">
+        <div><dt>Como aprende melhor</dt><dd>{{ aluno.como_aprende|default:"Não preenchido."|linebreaksbr }}</dd></div>
+        <div><dt>Principais dificuldades</dt><dd>{{ aluno.dificuldades|default:"Não preenchido."|linebreaksbr }}</dd></div>
+        <div><dt>Estratégias que funcionam</dt><dd>{{ aluno.estrategias|default:"Não preenchido."|linebreaksbr }}</dd></div>
+        {% if aluno.observacoes %}<div><dt>Observações</dt><dd>{{ aluno.observacoes|linebreaksbr }}</dd></div>{% endif %}
+      </dl>
+    {% else %}
+      <p class="vazio">Perfil ainda não preenchido.{% if pode_editar %} <a href="{% url 'alunos:editar' aluno.pk %}">Preencher agora</a>.{% endif %}</p>
+    {% endif %}
+  </section>
+
+  <section class="cartao" aria-labelledby="titulo-plano">
+    <h2 id="titulo-plano" class="cartao__titulo">Plano com IA</h2>
+    {% if aluno.plano_ia and aluno.plano_ia_texto %}
+      <div class="plano-texto">{{ aluno.plano_ia_texto|linebreaks }}</div>
+      <p class="cartao__meta">Gerado em {{ aluno.plano_ia_gerado_em|date:"d/m/Y \à\s H:i" }} só com as necessidades e os formatos marcados.</p>
+    {% elif aluno.plano_ia %}
+      <p class="vazio">Ainda sem sugestões.</p>
+    {% else %}
+      <p class="vazio">Desligado.{% if pode_editar %} Ligue em <a href="{% url 'alunos:editar' aluno.pk %}">Editar perfil</a> para a IA sugerir estratégias de apoio.{% endif %}</p>
+    {% endif %}
+    {% if aluno.plano_ia and pode_editar %}
+      <form method="post" action="{% url 'alunos:plano' aluno.pk %}">
+        {% csrf_token %}
+        <button class="botao botao--secundario" type="submit">Gerar sugestões de novo</button>
+      </form>
+    {% endif %}
+  </section>
+
+  <section class="cartao" aria-labelledby="titulo-professores">
+    <h2 id="titulo-professores" class="cartao__titulo">Professores que acompanham</h2>
+    {% with professores=aluno.professores.all %}
+      {% if professores %}
+        <ul class="lista-simples">{% for p in professores %}<li>{{ p.nome }}</li>{% endfor %}</ul>
+      {% else %}
+        <p class="vazio">Nenhum professor vinculado.</p>
+      {% endif %}
+    {% endwith %}
+  </section>
+
+  <section class="cartao" aria-labelledby="titulo-historico">
+    <h2 id="titulo-historico" class="cartao__titulo">Histórico de adaptações</h2>
+    {% if adaptacoes %}
+      <ul class="lista-simples">
+        {% for a in adaptacoes %}
+          <li><a href="{% url 'materiais:adaptacao' a.pk %}">{{ a.material.titulo }}</a> · {{ a.tipo.nome }} · {{ a.criado_em|date:"d/m/Y" }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="vazio">
+        Nenhum material adaptado para este aluno ainda.
+        {% if e_professor and aluno.ativo %}<a href="{% url 'materiais:adaptar' %}?aluno={{ aluno.pk }}">Adaptar um material</a>.{% endif %}
+      </p>
+    {% endif %}
+  </section>
+
+  <p class="perfil-rodape">
+    Cadastrado em {{ aluno.criado_em|date:"d/m/Y" }}{% if aluno.criado_por %} por {{ aluno.criado_por.nome }}{% endif %}.
+    Última atualização em {{ aluno.atualizado_em|date:"d/m/Y" }}.
+  </p>
+</div>
+{% endblock %}
