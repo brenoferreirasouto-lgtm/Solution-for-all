@@ -1,5 +1,5 @@
 {% extends "layouts/app.html" %}
-{# Entrega #5: lista simples para chegar aos perfis (a busca é da entrega #10). Entrega #6: seção de atenção. #}
+{# Entrega #5: lista para chegar aos perfis. Entrega #6: seção de atenção. Entrega #10: lupa de busca e filtro por necessidade. #}
 
 {% block conteudo %}
 <div class="pagina">
@@ -11,6 +11,37 @@
     {% if pode_cadastrar %}<a class="botao botao--primario" href="{% url 'alunos:novo' %}">Novo aluno</a>{% endif %}
   </div>
 
+  <form class="busca-pagina" role="search" method="get" action="{% url 'alunos:lista' %}">
+    <div class="busca-pagina__campo">
+      <label for="busca-q">Buscar aluno</label>
+      <div class="busca">
+        {% include "partials/_icone_lupa.html" %}
+        <input id="busca-q" type="search" name="q" value="{{ q }}" maxlength="80" placeholder="Nome ou turma" autocomplete="off">
+      </div>
+    </div>
+    <div class="busca-pagina__campo">
+      <label for="busca-necessidade">Necessidade</label>
+      <select id="busca-necessidade" name="necessidade">
+        <option value="">Todas</option>
+        {% for n in necessidades %}<option value="{{ n.slug }}"{% if necessidade and necessidade.pk == n.pk %} selected{% endif %}>{{ n.nome }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="busca-pagina__acoes">
+      <button class="botao botao--primario" type="submit">Buscar</button>
+      {% if filtrando %}<a class="botao botao--secundario" href="{% url 'alunos:lista' %}">Limpar</a>{% endif %}
+    </div>
+  </form>
+
+  {% if filtrando %}
+    <p class="busca-resultado" role="status">
+      {% if ativos or arquivados %}
+        {{ ativos|length }} aluno{{ ativos|length|pluralize }} encontrado{{ ativos|length|pluralize }}{% if q %} para “{{ q }}”{% endif %}{% if necessidade %} com {{ necessidade.nome }}{% endif %}.
+      {% else %}
+        Nenhum aluno encontrado{% if q %} para “{{ q }}”{% endif %}{% if necessidade %} com {{ necessidade.nome }}{% endif %}. Confira a grafia ou <a href="{% url 'alunos:lista' %}">limpe a busca</a>.
+      {% endif %}
+    </p>
+  {% endif %}
+
   {% if atencao %}
     <section class="bloco bloco--atencao" aria-labelledby="titulo-atencao">
       <h2 id="titulo-atencao" class="bloco__titulo">Precisam de atenção <span class="contador">{{ atencao|length }}</span></h2>
@@ -21,11 +52,13 @@
   {% endif %}
 
   <section class="bloco" aria-labelledby="titulo-todos">
-    <h2 id="titulo-todos" class="bloco__titulo">Todos <span class="contador">{{ ativos|length }}</span></h2>
+    <h2 id="titulo-todos" class="bloco__titulo">{% if filtrando %}Resultado{% else %}Todos{% endif %} <span class="contador">{{ ativos|length }}</span></h2>
     {% if ativos %}
       <ul class="lista-alunos">
         {% for aluno in ativos %}{% include "alunos/_item.html" with aluno=aluno %}{% endfor %}
       </ul>
+    {% elif filtrando %}
+      <p class="vazio">Nenhum aluno com esses filtros.</p>
     {% elif pode_cadastrar %}
       <p class="vazio">Nenhum aluno cadastrado ainda. Comece por <a href="{% url 'alunos:novo' %}">Novo aluno</a>.</p>
     {% else %}

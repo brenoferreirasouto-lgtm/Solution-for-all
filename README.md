@@ -4,7 +4,7 @@ App web para professores adaptarem materiais didáticos com IA para estudantes n
 
 Projeto da cadeira **Projetos 1** (Sistemas de Informação, CESAR School), Grupo 7: Francisco Costa, Matheus Nader, Breno Souto, José Victor e Victor Poggi.
 
-> **Status: entregas 1 e 3 a 8.** O projeto roda, o banco e o login funcionam. A coordenação cadastra a equipe (tela **Equipe**) e a grade de **Horários**; coordenação e núcleo cadastram **Alunos** com perfil cognitivo, sugestões da IA e a lista de quem precisa de atenção. O professor **adapta materiais** (PDF, Word ou texto colado), revisa o texto, ouve, refaz e exporta em PDF ou Word. A IA ainda é simulada. As demais telas ainda mostram "Em construção" e dizem qual entrega vai construí-las.
+> **Status: entregas 1, 3 a 8 e 10.** O projeto roda, o banco e o login funcionam. A coordenação cadastra a equipe (tela **Equipe**) e a grade de **Horários**; coordenação e núcleo cadastram **Alunos** com perfil cognitivo, sugestões da IA e a lista de quem precisa de atenção. O professor **adapta materiais** (PDF, Word ou texto colado), revisa o texto, ouve, refaz e exporta em PDF ou Word. O menu ☰ (barra lateral no desktop) lista os alunos de quem está logado, com uma lupa que filtra enquanto se digita e uma busca completa em **Alunos** (nome ou turma, e necessidade). A IA ainda é simulada. As demais telas ainda mostram "Em construção" e dizem qual entrega vai construí-las.
 
 ---
 
@@ -116,7 +116,7 @@ Cada view declara os papéis aceitos (`papeis = COORDENACAO`, `PROFESSOR`, `TODO
 | `/senha/recuperar/`, `/senha/codigo/`, `/senha/nova/` | Recuperar senha por código no e-mail | Visitante | #13 |
 | `/painel/` | Painel do professor / da coordenação / do núcleo | Logado | #9 / #12 |
 | `/alunos/` | Lista de alunos, com "Precisam de atenção" no topo | Todos (professor só os seus) | #5/#6 (pronta) |
-| `/alunos/?q=&necessidade=` | Busca e filtros na lista | Todos | #10 |
+| `/alunos/?q=&necessidade=` | Busca e filtros na lista (ignora acento e maiúscula; nome ou turma) | Todos (professor só os seus) | #10 (pronta) |
 | `/alunos/novo/` | Novo aluno com perfil cognitivo | Coordenador e núcleo | #5 (pronta) |
 | `/alunos/<id>/` | Perfil, sugestões da IA e histórico do aluno | Todos (professor só os seus) | #5 (pronta) |
 | `/alunos/<id>/editar/` | Editar aluno | Coordenador e núcleo | #5 (pronta) |

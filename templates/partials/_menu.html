@@ -24,6 +24,33 @@
     {% endif %}
   </ul>
 
+  {# Entrega #10: busca com lupa e lista de alunos (só os que o usuário pode ver). O filtro ao vivo está em static/js/menu.js; sem JavaScript, o Enter leva à busca completa. #}
+  <section class="menu__alunos" aria-labelledby="menu-alunos-titulo" data-busca-menu>
+    <h2 id="menu-alunos-titulo" class="menu__titulo">{{ menu_alunos_titulo }}</h2>
+    <form class="busca" role="search" method="get" action="{% url 'alunos:lista' %}">
+      <label class="oculto" for="menu-busca">Buscar aluno</label>
+      {% include "partials/_icone_lupa.html" %}
+      <input id="menu-busca" type="search" name="q" maxlength="80" placeholder="Buscar aluno" autocomplete="off" data-busca-entrada>
+    </form>
+    <p class="oculto" role="status" aria-live="polite" data-busca-status></p>
+    {% if menu_alunos %}
+      <ul class="menu__alunos-lista" data-busca-lista>
+        {% for aluno in menu_alunos %}
+          <li data-busca-texto="{{ aluno.nome }} {{ aluno.turma.nome }}">
+            <a href="{% url 'alunos:detalhe' aluno.pk %}">
+              <span class="menu__aluno-nome">{{ aluno.nome }}</span>
+              <span class="menu__aluno-turma">{{ aluno.turma.nome }}</span>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+      <p class="menu__alunos-vazio" data-busca-vazio hidden>Nenhum aluno com esse nome.</p>
+    {% else %}
+      <p class="menu__alunos-vazio">Nenhum aluno por aqui ainda.</p>
+    {% endif %}
+    <a class="menu__alunos-todos" href="{% url 'alunos:lista' %}">{% if menu_alunos_tem_mais %}Ver todos (a lista é maior que esta){% else %}Ver lista completa{% endif %}</a>
+  </section>
+
   <div class="menu__rodape">
     <form method="post" action="{% url 'contas:sair' %}">
       {% csrf_token %}
