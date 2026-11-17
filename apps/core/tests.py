@@ -225,4 +225,4 @@ class IaSimuladaTests(EsqueletoTestCase):
         resultado = gerar_adaptacao("As plantas usam a luz do sol.", tipo)
         self.assertEqual(resultado.gerado_por, "simulada")
         self.assertIn("As plantas usam a luz do sol.", resultado.conteudo)
-        self.assertIn("Resumo", resultado.conteudo)
+        self.assertIn("Ideias principais", resultado.conteudo)
