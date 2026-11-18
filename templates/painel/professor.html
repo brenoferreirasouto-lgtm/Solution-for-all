@@ -1,0 +1,52 @@
+{% extends "layouts/app.html" %}
+{# Entrega #9: painel do professor (resumo, aulas de hoje, adaptação rápida e alertas). #}
+
+{% block conteudo %}
+<div class="pagina">
+  <p class="pagina__saudacao">{{ saudacao }} <span class="asterisco" aria-hidden="true">✳</span></p>
+  <h1 class="pagina__titulo">{{ titulo }}</h1>
+  <p class="pagina__subtitulo">{{ subtitulo }}</p>
+
+  {% include "painel/_resumo.html" %}
+
+  {% include "painel/_aulas_hoje.html" %}
+
+  <section class="bloco" aria-labelledby="titulo-rapida">
+    <h2 id="titulo-rapida" class="bloco__titulo">Adaptação rápida</h2>
+    {% if alunos_rapidos %}
+      <p class="bloco__nota">Escolha o aluno: o formato do perfil dele já vem marcado na tela de adaptar.</p>
+      <ul class="lista-alunos">
+        {% for aluno in alunos_rapidos %}
+          <li>
+            <a class="aluno-item" href="{% url 'materiais:adaptar' %}?aluno={{ aluno.pk }}" aria-label="Adaptar material para {{ aluno.nome }}">
+              <span class="avatar" aria-hidden="true">{{ aluno.iniciais }}</span>
+              <span class="aluno-item__dados">
+                <strong>{{ aluno.nome }}</strong>
+                <span>{{ aluno.turma.nome }}</span>
+              </span>
+              <svg class="aluno-item__seta" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+      <div class="acoes-linha bloco__acoes">
+        <a class="botao botao--primario" href="{% url 'materiais:adaptar' %}">Adaptar material</a>
+        {% if tem_mais_alunos %}<a class="botao botao--secundario" href="{% url 'alunos:lista' %}">Ver todos os alunos</a>{% endif %}
+      </div>
+    {% else %}
+      <p class="vazio">Nenhum aluno vinculado a você ainda. A coordenação faz esse vínculo no cadastro do aluno.</p>
+    {% endif %}
+  </section>
+
+  <section class="bloco bloco--atencao" aria-labelledby="titulo-atencao">
+    <h2 id="titulo-atencao" class="bloco__titulo">Precisam de atenção <span class="contador">{{ alunos_atencao|length }}</span></h2>
+    {% if alunos_atencao %}
+      <ul class="lista-alunos">
+        {% for aluno in alunos_atencao %}{% include "alunos/_item.html" with aluno=aluno detalhe="motivo" %}{% endfor %}
+      </ul>
+    {% else %}
+      <p class="vazio">Nenhum dos seus alunos está marcado como "precisa de atenção".</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
