@@ -1,0 +1,9 @@
+{# Os números do topo dos painéis. Cada um leva à tela onde dá para ver os detalhes. #}
+<section class="resumo" aria-label="Resumo">
+  {% for item in resumo %}
+    <a class="resumo__item" href="{% url item.rota %}">
+      <span class="resumo__numero">{{ item.valor }}</span>
+      <span class="resumo__rotulo">{{ item.rotulo }}</span>
+    </a>
+  {% endfor %}
+</section>

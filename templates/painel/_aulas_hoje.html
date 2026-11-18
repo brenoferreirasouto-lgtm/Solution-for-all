@@ -1,0 +1,17 @@
+{# Card "Aulas de hoje" (entregas #9 e #12). Com mostrar_professor, mostra quem dá cada aula. #}
+<section class="bloco" aria-labelledby="titulo-aulas">
+  <h2 id="titulo-aulas" class="bloco__titulo">Aulas de hoje <span class="contador">{{ aulas_hoje|length }}</span></h2>
+  {% if aulas_hoje %}
+    <ul class="grade__aulas">
+      {% for aula in aulas_hoje %}
+        <li class="aula aula--leitura">
+          <span class="aula__hora">{{ aula.hora_inicio|time:"H:i" }} – {{ aula.hora_fim|time:"H:i" }}</span>
+          <span class="aula__info">{{ aula.lecionacao.disciplina }} · <span class="sem-quebra">{{ aula.lecionacao.turma.nome }}</span></span>
+          {% if mostrar_professor %}<span class="aula__info">{{ aula.lecionacao.professor.nome }}</span>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="vazio">Sem aulas hoje.</p>
+  {% endif %}
+</section>

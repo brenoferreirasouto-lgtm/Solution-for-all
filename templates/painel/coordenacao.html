@@ -1,0 +1,47 @@
+{% extends "layouts/app.html" %}
+{# Entrega #12: painel da coordenação (números da escola, aulas de hoje e atalhos). #}
+
+{% block conteudo %}
+<div class="pagina">
+  <p class="pagina__saudacao">{{ saudacao }} <span class="asterisco" aria-hidden="true">✳</span></p>
+  <h1 class="pagina__titulo">{{ titulo }}</h1>
+  <p class="pagina__subtitulo">{{ subtitulo }}</p>
+
+  {% include "painel/_resumo.html" %}
+
+  <section class="bloco" aria-labelledby="titulo-atalhos">
+    <h2 id="titulo-atalhos" class="bloco__titulo">Atalhos</h2>
+    <ul class="atalhos">
+      <li><a class="botao botao--primario botao--largo" href="{% url 'alunos:novo' %}">Novo aluno</a></li>
+      <li><a class="botao botao--secundario botao--largo" href="{% url 'escola:professor_novo' %}">Novo professor</a></li>
+      <li><a class="botao botao--secundario botao--largo" href="{% url 'escola:nucleo_novo' %}">Novo membro do núcleo</a></li>
+      <li><a class="botao botao--secundario botao--largo" href="{% url 'escola:horario_novo' %}">Novo horário</a></li>
+      <li><a class="botao botao--secundario botao--largo" href="{% url 'escola:equipe' %}">Equipe</a></li>
+      <li><a class="botao botao--secundario botao--largo" href="{% url 'escola:horarios' %}">Horários</a></li>
+      {% if mostrar_catalogos %}
+        <li><a class="botao botao--secundario botao--largo" href="{% url 'admin:index' %}">Catálogos</a></li>
+      {% endif %}
+    </ul>
+  </section>
+
+  {% include "painel/_aulas_hoje.html" with mostrar_professor=True %}
+
+  <section class="bloco" aria-labelledby="titulo-necessidades">
+    <h2 id="titulo-necessidades" class="bloco__titulo">Alunos por necessidade</h2>
+    {% if necessidades %}
+      <ul class="necessidades">
+        {% for necessidade in necessidades %}
+          <li>
+            <a class="necessidades__item" href="{% url 'alunos:lista' %}?necessidade={{ necessidade.slug }}">
+              <span>{{ necessidade.nome }}</span>
+              <span class="contador">{{ necessidade.total }}</span>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="vazio">Nenhuma necessidade cadastrada. Os catálogos ficam em "Catálogos".</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
