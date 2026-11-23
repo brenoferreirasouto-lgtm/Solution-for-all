@@ -1,3 +1,4 @@
+# a lógica de cada tela. Recebe o pedido, busca os dados e devolve a página
 """
 Telas de alunos.
 

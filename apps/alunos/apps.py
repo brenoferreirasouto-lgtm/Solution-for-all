@@ -1,3 +1,4 @@
+#só registra o app no Django
 from django.apps import AppConfig
 
 

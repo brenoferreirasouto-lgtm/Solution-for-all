@@ -1,3 +1,5 @@
+#configura a tela administrativa do Django
+
 from django.contrib import admin
 
 from .models import Aluno, Necessidade, TipoAdaptacao
