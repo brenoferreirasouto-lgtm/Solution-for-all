@@ -1,37 +1,52 @@
 """
-Serviço de IA do Solution for All.
+Serviço de IA do Solution for All, versão em Python básico.
 
 Hoje a IA é SIMULADA: nenhuma API é chamada e nenhum dado sai do app. A
 adaptação reorganiza o próprio texto do material conforme o formato. Quando o
 grupo decidir ligar a API gratuita (entrega #2), só este arquivo muda; views,
-banco e rotas continuam iguais. Antes de ligar, atualize a Política de
-Privacidade (provedor e transferência internacional).
+banco e rotas continuam iguais.
 
 Regra de privacidade (LGPD): `gerar_adaptacao` recebe só o texto do material
 e o formato; `gerar_plano_apoio` recebe só os itens de catálogo marcados no
 cadastro (necessidades e formatos). Nunca passe o nome do aluno, as
 observações nem dados de diagnóstico para a IA.
-"""
 
-import re
-from dataclasses import dataclass
+Usa só: strings, listas, for/while, if e funções.
+"""
 
 LIMITE_ENTRADA = 12000  # caracteres do material que vão para a IA
 LIMITE_FRASES = 15
 AVISO_CORTE = "(O material original continua. Esta prévia simulada usa só o começo do texto.)"
 
+# Letras que, depois de um ponto final e um espaço, indicam que começa outra frase.
+FIM_DE_FRASE = ".!?…"
+INICIO_DE_FRASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝ0123456789\"“(•-"
+# Símbolos que atrapalham a leitura em voz alta.
+SIMBOLOS_DO_AUDIO = "•|*#_<>[]{}"
 
-@dataclass(frozen=True)
+
+# As duas classes abaixo existem por obrigação: o resto do projeto (Django e
+# testes) lê `resultado.conteudo` e `resultado.gerado_por`, e o Python só deixa
+# dar `raise` em exceções, que são classes. Nenhuma tem método.
 class ResultadoIA:
-    conteudo: str
-    gerado_por: str
+    """Guarda o texto gerado (conteudo) e quem gerou (gerado_por)."""
+
+    conteudo = ""
+    gerado_por = ""
 
 
 class IAIndisponivel(RuntimeError):
     """A IA não respondeu (limite do plano gratuito, rede...). A adaptação fica com status Erro."""
 
 
-def gerar_adaptacao(texto: str, tipo) -> ResultadoIA:
+def novo_resultado(conteudo, gerado_por):
+    resultado = ResultadoIA()
+    resultado.conteudo = conteudo
+    resultado.gerado_por = gerado_por
+    return resultado
+
+
+def gerar_adaptacao(texto, tipo):
     """
     Adapta `texto` para o formato `tipo` (um TipoAdaptacao do catálogo).
 
@@ -41,29 +56,85 @@ def gerar_adaptacao(texto: str, tipo) -> ResultadoIA:
     para ouvir), sem reescrever o conteúdo.
     """
     paragrafos = _paragrafos(texto)
-    if not paragrafos:
-        return ResultadoIA(conteudo="(O material enviado não tem texto legível.)", gerado_por="simulada")
-    montar = _FORMATOS.get(getattr(tipo, "slug", ""), _simples)
-    return ResultadoIA(conteudo=montar(paragrafos).strip(), gerado_por="simulada")
+    if len(paragrafos) == 0:
+        return novo_resultado("(O material enviado não tem texto legível.)", "simulada")
+
+    slug = getattr(tipo, "slug", "")
+    if slug == "resumo":
+        conteudo = _resumo(paragrafos)
+    elif slug == "visual":
+        conteudo = _visual(paragrafos)
+    elif slug == "audio":
+        conteudo = _audio(paragrafos)
+    else:
+        conteudo = _simples(paragrafos)
+    return novo_resultado(conteudo.strip(), "simulada")
+
+
+# ---------------------------------------------------------------------------
+# Quebrar o texto em parágrafos e frases
+# ---------------------------------------------------------------------------
+def _blocos_de_linhas(texto):
+    """Separa o texto nas linhas em branco. Cada bloco é uma lista de linhas sem espaços nas pontas."""
+    blocos = []
+    atual = []
+    for linha in texto.split("\n"):
+        linha = linha.strip()
+        if linha == "":
+            # Linha em branco: termina o bloco que estava sendo montado.
+            if len(atual) > 0:
+                blocos.append(atual)
+            atual = []
+        else:
+            atual.append(linha)
+    if len(atual) > 0:
+        blocos.append(atual)
+    return blocos
+
+
+def _dividir_em_frases(bloco):
+    """Corta o bloco onde há ponto/!/?/… + espaço + começo de outra frase."""
+    frases = []
+    comeco = 0
+    for i in range(1, len(bloco) - 1):
+        if bloco[i] == " " and bloco[i - 1] in FIM_DE_FRASE and bloco[i + 1] in INICIO_DE_FRASE:
+            frases.append(bloco[comeco:i])
+            comeco = i + 1
+    frases.append(bloco[comeco:])
+
+    limpas = []
+    for frase in frases:
+        frase = frase.strip()
+        if frase != "":
+            limpas.append(frase)
+    return limpas
 
 
 def _paragrafos(texto):
     """Lista de parágrafos; cada um é uma lista de frases. Títulos (linha curta sem ponto) ficam de fora."""
-    texto = (texto or "")[:LIMITE_ENTRADA]
+    if texto is None:
+        texto = ""
+    texto = texto[:LIMITE_ENTRADA]
+
     blocos = []
-    for bloco in re.split(r"\n\s*\n", texto):
-        linhas = [linha.strip() for linha in bloco.split("\n") if linha.strip()]
+    for linhas in _blocos_de_linhas(texto):
         # Título colado no parágrafo (comum em PDF): sai do começo do bloco.
         while len(linhas) > 1 and _parece_titulo(linhas[0]):
             linhas.pop(0)
-        if linhas:
-            blocos.append(" ".join(" ".join(linhas).split()))
+        blocos.append(" ".join(" ".join(linhas).split()))
+
     # Tira os títulos, a não ser que o texto inteiro seja feito de linhas curtas (ex.: uma lista).
-    blocos = [b for b in blocos if not _parece_titulo(b)] or blocos
-    return [
-        [f.strip() for f in re.split(r"(?<=[.!?…])\s+(?=[A-ZÀ-Ý0-9\"“(•-])", bloco) if f.strip()]
-        for bloco in blocos
-    ]
+    sem_titulos = []
+    for bloco in blocos:
+        if not _parece_titulo(bloco):
+            sem_titulos.append(bloco)
+    if len(sem_titulos) > 0:
+        blocos = sem_titulos
+
+    paragrafos = []
+    for bloco in blocos:
+        paragrafos.append(_dividir_em_frases(bloco))
+    return paragrafos
 
 
 def _parece_titulo(bloco):
@@ -74,27 +145,39 @@ def _essencial(frase, palavras):
     """Encurta frases longas no primeiro sinal de pausa depois de 5 palavras."""
     if len(frase.split()) <= palavras:
         return frase
-    for corte in re.finditer(r"[,;:]", frase):
-        inicio = frase[: corte.start()]
-        if 5 <= len(inicio.split()) <= palavras:
-            return inicio + "."
+    for i in range(len(frase)):
+        if frase[i] in ",;:":
+            inicio = frase[:i]
+            if 5 <= len(inicio.split()) <= palavras:
+                return inicio + "."
     return " ".join(frase.split()[:palavras]).rstrip(",;:") + "…"
 
 
+# ---------------------------------------------------------------------------
+# Os quatro formatos
+# ---------------------------------------------------------------------------
 def _simples(paragrafos):
     """Uma frase por linha; frases com ponto e vírgula viram duas."""
-    blocos, total, cortou = [], 0, False
+    blocos = []
+    total = 0
+    cortou = False
     for frases in paragrafos:
         linhas = []
         for frase in frases:
-            for curta in (p.strip() for p in frase.split(";") if p.strip()):
+            for pedaco in frase.split(";"):
+                curta = pedaco.strip()
+                if curta == "":
+                    continue
                 if total >= LIMITE_FRASES:
                     cortou = True
                     break
                 curta = curta[0].upper() + curta[1:]
-                linhas.append(curta if curta[-1] in ".!?…" else curta + ".")
-                total += 1
-        if linhas:
+                if curta[-1] in ".!?…":
+                    linhas.append(curta)
+                else:
+                    linhas.append(curta + ".")
+                total = total + 1
+        if len(linhas) > 0:
             blocos.append("\n".join(linhas))
         if cortou:
             break
@@ -104,61 +187,94 @@ def _simples(paragrafos):
 
 
 def _resumo(paragrafos):
-    ideias = paragrafos[0][:4] if len(paragrafos) == 1 else [frases[0] for frases in paragrafos[:6]]
-    return "Ideias principais\n\n" + "\n".join(f"• {_essencial(i, 22)}" for i in ideias)
+    if len(paragrafos) == 1:
+        ideias = paragrafos[0][:4]
+    else:
+        ideias = []
+        for frases in paragrafos[:6]:
+            ideias.append(frases[0])
+
+    linhas = []
+    for ideia in ideias:
+        linhas.append("• " + _essencial(ideia, 22))
+    return "Ideias principais\n\n" + "\n".join(linhas)
 
 
 def _visual(paragrafos):
-    frases = [f for p in paragrafos for f in p][:8]
-    passos = [f"{n}. {_essencial(f, 14)}" for n, f in enumerate(frases, start=1)]
+    todas = []
+    for paragrafo in paragrafos:
+        for frase in paragrafo:
+            todas.append(frase)
+    frases = todas[:8]
+
+    passos = []
+    for i in range(len(frases)):
+        passos.append(f"{i + 1}. {_essencial(frases[i], 14)}")
     return "Esquema em passos\n\n" + "\n".join(passos)
 
 
 def _audio(paragrafos):
-    frases = [" ".join(re.sub(r"[•|*#_<>\[\]{}]", " ", f).split()) for p in paragrafos for f in p][:12]
-    frases = [f for f in frases if f]
-    blocos = [" ".join(frases[i : i + 2]) for i in range(0, len(frases), 2)]
-    return "\n\n".join(["Ouça com atenção.", *blocos, "Fim do texto."])
+    todas = []
+    for paragrafo in paragrafos:
+        for frase in paragrafo:
+            for simbolo in SIMBOLOS_DO_AUDIO:
+                frase = frase.replace(simbolo, " ")
+            todas.append(" ".join(frase.split()))
+
+    frases = []
+    for frase in todas[:12]:
+        if frase != "":
+            frases.append(frase)
+
+    partes = ["Ouça com atenção."]
+    for i in range(0, len(frases), 2):
+        partes.append(" ".join(frases[i : i + 2]))  # duas frases por bloco
+    partes.append("Fim do texto.")
+    return "\n\n".join(partes)
 
 
-_FORMATOS = {"simples": _simples, "resumo": _resumo, "visual": _visual, "audio": _audio}
+# ---------------------------------------------------------------------------
+# Plano com IA do cadastro de aluno (entrega #5)
+# ---------------------------------------------------------------------------
+def estrategias_da_necessidade(slug):
+    """Estratégias gerais de uma necessidade do catálogo (lista vazia se não conhecemos)."""
+    if slug == "tea":
+        return [
+            "Antecipe a rotina da aula e avise com antecedência quando algo mudar.",
+            "Dê uma instrução por vez, de forma direta, com apoio visual.",
+            "Combine um sinal ou um espaço para pausa quando houver sobrecarga.",
+        ]
+    if slug == "tdah":
+        return [
+            "Divida as atividades em etapas curtas, com pausas planejadas.",
+            "Mostre o objetivo da tarefa no início e confira o andamento em pontos combinados.",
+            "Reduza as distrações por perto e alterne tarefas paradas com tarefas com movimento.",
+        ]
+    if slug == "dislexia":
+        return [
+            "Use fonte maior, espaçamento amplo e parágrafos curtos.",
+            "Ofereça o conteúdo também em áudio e leia os enunciados em voz alta.",
+            "Avalie a compreensão também de forma oral, sem penalizar a ortografia.",
+        ]
+    if slug == "deficiencia-visual":
+        return [
+            "Prefira alto contraste e descreva imagens, gráficos e esquemas.",
+            "Entregue arquivos que funcionem com leitor de tela e ampliação.",
+        ]
+    if slug == "deficiencia-auditiva":
+        return [
+            "Acompanhe as explicações orais com texto escrito ou legenda.",
+            "Fale de frente para a turma e use apoio visual nas instruções.",
+        ]
+    if slug == "deficiencia-motora":
+        return [
+            "Dê mais tempo para atividades escritas e aceite resposta oral ou digital.",
+            "Organize o material para exigir pouca manipulação.",
+        ]
+    return []
 
 
-# Plano com IA do cadastro de aluno (entrega #5) ------------------------------
-# Versão simulada: estratégias gerais por necessidade do catálogo. A IA de
-# verdade receberia os mesmos dados (nomes do catálogo), nunca o aluno.
-ESTRATEGIAS_POR_NECESSIDADE = {
-    "tea": (
-        "Antecipe a rotina da aula e avise com antecedência quando algo mudar.",
-        "Dê uma instrução por vez, de forma direta, com apoio visual.",
-        "Combine um sinal ou um espaço para pausa quando houver sobrecarga.",
-    ),
-    "tdah": (
-        "Divida as atividades em etapas curtas, com pausas planejadas.",
-        "Mostre o objetivo da tarefa no início e confira o andamento em pontos combinados.",
-        "Reduza as distrações por perto e alterne tarefas paradas com tarefas com movimento.",
-    ),
-    "dislexia": (
-        "Use fonte maior, espaçamento amplo e parágrafos curtos.",
-        "Ofereça o conteúdo também em áudio e leia os enunciados em voz alta.",
-        "Avalie a compreensão também de forma oral, sem penalizar a ortografia.",
-    ),
-    "deficiencia-visual": (
-        "Prefira alto contraste e descreva imagens, gráficos e esquemas.",
-        "Entregue arquivos que funcionem com leitor de tela e ampliação.",
-    ),
-    "deficiencia-auditiva": (
-        "Acompanhe as explicações orais com texto escrito ou legenda.",
-        "Fale de frente para a turma e use apoio visual nas instruções.",
-    ),
-    "deficiencia-motora": (
-        "Dê mais tempo para atividades escritas e aceite resposta oral ou digital.",
-        "Organize o material para exigir pouca manipulação.",
-    ),
-}
-
-
-def gerar_plano_apoio(necessidades, formatos) -> ResultadoIA:
+def gerar_plano_apoio(necessidades, formatos):
     """
     Sugere estratégias de apoio para o "Plano com IA" do cadastro de aluno.
 
@@ -166,17 +282,26 @@ def gerar_plano_apoio(necessidades, formatos) -> ResultadoIA:
     Versão simulada: junta estratégias gerais de cada necessidade marcada.
     """
     partes = ["Sugestões de apoio (IA simulada)"]
+
     for necessidade in necessidades:
-        estrategias = ESTRATEGIAS_POR_NECESSIDADE.get(necessidade.slug) or (
-            "Combine com o núcleo psicopedagógico as estratégias de apoio mais adequadas.",
-        )
-        partes.append("\n".join([necessidade.nome, *(f"• {e}" for e in estrategias)]))
+        estrategias = estrategias_da_necessidade(necessidade.slug)
+        if len(estrategias) == 0:
+            estrategias = ["Combine com o núcleo psicopedagógico as estratégias de apoio mais adequadas."]
+        linhas = [necessidade.nome]
+        for estrategia in estrategias:
+            linhas.append("• " + estrategia)
+        partes.append("\n".join(linhas))
+
     if formatos:
-        linhas = [
-            f"• {f.nome}: {f.descricao}" if f.descricao else f"• {f.nome}" for f in formatos
-        ]
-        partes.append("\n".join(["Formatos recomendados para os materiais", *linhas]))
+        linhas = ["Formatos recomendados para os materiais"]
+        for formato in formatos:
+            if formato.descricao:
+                linhas.append(f"• {formato.nome}: {formato.descricao}")
+            else:
+                linhas.append(f"• {formato.nome}")
+        partes.append("\n".join(linhas))
+
     if len(partes) == 1:
         partes.append("Marque ao menos uma necessidade ou um formato para a IA sugerir estratégias.")
     partes.append("Revise estas sugestões com o núcleo psicopedagógico antes de usar.")
-    return ResultadoIA(conteudo="\n\n".join(partes), gerado_por="simulada")
+    return novo_resultado("\n\n".join(partes), "simulada")
