@@ -19,3 +19,10 @@ db.sqlite3-journal
 .idea/
 .DS_Store
 Thumbs.db
+
+# Arquivos gerados pela versão simples (dados de teste)
+usuarios.txt
+alunos.txt
+horarios.txt
+adaptacoes.txt
+adaptacao_*.txt

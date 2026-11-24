@@ -1,9 +1,0 @@
-#só registra o app no Django
-from django.apps import AppConfig
-
-
-class AlunosConfig(AppConfig):
-    default_auto_field = "django.db.models.BigAutoField"
-    name = "apps.alunos"
-    label = "alunos"
-    verbose_name = "Alunos"

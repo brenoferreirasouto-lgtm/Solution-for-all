@@ -4,6 +4,8 @@ App web para professores adaptarem materiais didáticos com IA para estudantes n
 
 Projeto da cadeira **Projetos 1** (Sistemas de Informação, CESAR School), Grupo 7: Francisco Costa, Matheus Nader, Breno Souto, José Victor e Victor Poggi.
 
+> **Versão simples (Python básico, sem Django).** O backend agora é o arquivo `solution_for_all.py`, que roda no terminal e guarda os dados em arquivos `.txt`. Usa só `if`/`elif`/`else`, `for`/`while`, listas e matrizes, funções, `try`/`except`, strings e arquivos. Para rodar: `python solution_for_all.py` (usuários de teste, senha `solution123`: `coordenacao@escola.com`, `francisco@escola.com`, `joana@escola.com`, `nucleo@escola.com`). Os templates e o CSS ficam na pasta como referência do front. A versão com Django continua no histórico, no commit `fdc3ce6`; as instruções de Django mais abaixo valem só para ela.
+
 > **Status: entregas 1, 3 a 8 e 10.** O projeto roda, o banco e o login funcionam. A coordenação cadastra a equipe (tela **Equipe**) e a grade de **Horários**; coordenação e núcleo cadastram **Alunos** com perfil cognitivo, sugestões da IA e a lista de quem precisa de atenção. O professor **adapta materiais** (PDF, Word ou texto colado), revisa o texto, ouve, refaz e exporta em PDF ou Word. O menu ☰ (barra lateral no desktop) lista os alunos de quem está logado, com uma lupa que filtra enquanto se digita e uma busca completa em **Alunos** (nome ou turma, e necessidade). A IA ainda é simulada. As demais telas ainda mostram "Em construção" e dizem qual entrega vai construí-las.
 
 ---
