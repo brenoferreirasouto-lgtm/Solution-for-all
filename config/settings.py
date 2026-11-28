@@ -139,6 +139,26 @@ EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.console.Em
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "Solution for All <nao-responda@solutionforall.local>")
 
 
+# Inteligência artificial (entrega #2) ----------------------------------------
+# Sem GROQ_API_KEY o app usa a IA simulada (nada sai do app). Com a chave, usa o
+# Groq. IA_PROVEDOR=simulada desliga a IA de verdade mesmo com a chave no .env.
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
+GROQ_MODELO = os.getenv("GROQ_MODELO", "").strip() or "openai/gpt-oss-120b"
+# Usado quando o principal bate no limite gratuito. GROQ_MODELO_RESERVA= (vazio) desliga.
+GROQ_MODELO_RESERVA = os.getenv("GROQ_MODELO_RESERVA", "openai/gpt-oss-20b").strip()
+IA_PROVEDOR = (os.getenv("IA_PROVEDOR", "").strip().lower() or ("groq" if GROQ_API_KEY else "simulada"))
+if IA_PROVEDOR not in {"groq", "simulada"}:
+    raise RuntimeError('IA_PROVEDOR no .env deve ser "groq" ou "simulada".')
+if IA_PROVEDOR == "groq" and not GROQ_API_KEY:
+    raise RuntimeError("IA_PROVEDOR=groq precisa de GROQ_API_KEY no .env (crie em console.groq.com/keys).")
+try:
+    IA_TIMEOUT = max(5, int(os.getenv("IA_TIMEOUT", "30")))  # segundos de espera por resposta
+except ValueError:
+    raise RuntimeError("IA_TIMEOUT no .env deve ser um número de segundos.") from None
+
+# Os testes nunca chamam a internet nem gastam o limite da chave (veja apps/core/testes.py).
+TEST_RUNNER = "apps.core.testes.TestesSemInternet"
+
 # Mensagens (avisos de sucesso/erro) ----------------------------------------
 
 from django.contrib.messages import constants as mensagens  # noqa: E402

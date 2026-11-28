@@ -29,6 +29,7 @@ from apps.core.permissoes import PROFESSOR, TODOS, PapelRequeridoMixin
 from .forms import AdaptarForm, RevisarForm
 from .models import Adaptacao, Material
 from .services.adaptacoes import adaptar, criar_material
+from .services.ia import LIMITE_ENTRADA_IA, ia_real
 
 
 class MateriaisVisiveisMixin:
@@ -142,6 +143,8 @@ class AdaptarView(PapelRequeridoMixin, FormView):
             titulo="Adaptar material",
             subtitulo="Escolha o aluno, envie o conteúdo e o formato. A IA recebe só o texto do material, nunca os dados do aluno.",
             sem_alunos=not contexto["form"].fields["aluno"].queryset.exists(),
+            ia_real=ia_real(),
+            limite_ia=f"{LIMITE_ENTRADA_IA:,}".replace(",", "."),
         )
         return contexto
 
@@ -161,7 +164,7 @@ class AdaptarView(PapelRequeridoMixin, FormView):
             )
         adaptacao = adaptar(material, aluno, dados["tipo"], usuario)
         if adaptacao.status == Adaptacao.Status.ERRO:
-            messages.error(self.request, "A IA não respondeu agora. Tente de novo com o botão Refazer.")
+            messages.error(self.request, "O material ficou salvo, mas a adaptação não foi gerada. Veja o motivo abaixo.")
         else:
             messages.success(self.request, f"Material adaptado para {aluno.nome}. Revise o texto antes de usar.")
         return redirect("materiais:adaptacao", pk=adaptacao.pk)
@@ -242,7 +245,7 @@ class AdaptacaoRefazerView(AcaoDoAutorMixin, View):
         anterior = self.get_adaptacao()
         nova = adaptar(anterior.material, anterior.aluno, anterior.tipo, request.user)
         if nova.status == Adaptacao.Status.ERRO:
-            messages.error(request, "A IA não respondeu agora. Tente de novo daqui a pouco.")
+            messages.error(request, "A nova versão não foi gerada. Veja o motivo abaixo.")
         else:
             aviso = f"Versão {nova.versao} gerada. A versão {anterior.versao} continua no histórico."
             if nova.ia_simulada:

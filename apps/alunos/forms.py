@@ -59,6 +59,7 @@ class AlunoForm(forms.ModelForm):
 
     def __init__(self, *args, usuario=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.aviso_plano = ""  # mensagem da IA quando o Plano com IA não pôde ser gerado
         self.usuario = usuario
         atual = self.instance if self.instance.pk else None
         # O ModelForm copia os dados da tela para o aluno ao validar; guardamos
@@ -111,8 +112,10 @@ class AlunoForm(forms.ModelForm):
         if aluno.plano_ia:
             mudou = novo or not aluno.plano_ia_texto or {"necessidades", "formatos", "plano_ia"} & set(self.changed_data)
             if mudou:
-                aluno.gerar_plano()
-                aluno.save(update_fields=["plano_ia_texto", "plano_ia_gerado_em", "atualizado_em"])
+                # Se a IA falhar, o aluno fica salvo e a view mostra o aviso (aviso_plano).
+                self.aviso_plano = aluno.gerar_plano()
+                if not self.aviso_plano:
+                    aluno.save(update_fields=["plano_ia_texto", "plano_ia_gerado_em", "atualizado_em"])
         elif aluno.plano_ia_texto:
             aluno.limpar_plano()
             aluno.save(update_fields=["plano_ia_texto", "plano_ia_gerado_em", "atualizado_em"])

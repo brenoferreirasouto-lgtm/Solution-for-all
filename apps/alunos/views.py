@@ -25,6 +25,15 @@ from .forms import AlunoForm, AtencaoForm
 from .models import Aluno, Necessidade
 
 
+
+def avisar_plano(request, form):
+    """O cadastro salvou, mas a IA não gerou o Plano agora (limite gratuito, sem internet...)."""
+    erro = getattr(form, "aviso_plano", "")
+    if erro:
+        messages.warning(
+            request, f"O Plano com IA não foi gerado agora. {erro} Depois, use Gerar sugestões de novo no perfil do aluno."
+        )
+
 class AlunosVisiveisMixin:
     def get_queryset(self):
         return Aluno.objects.visiveis_para(self.request.user)
@@ -111,6 +120,7 @@ class AlunoNovoView(AlunoFormMixin, CreateView):
     def form_valid(self, form):
         resposta = super().form_valid(form)
         messages.success(self.request, f"{self.object.nome} foi cadastrado(a).")
+        avisar_plano(self.request, form)
         return resposta
 
 
@@ -124,6 +134,7 @@ class AlunoEditarView(AlunosVisiveisMixin, AlunoFormMixin, UpdateView):
     def form_valid(self, form):
         resposta = super().form_valid(form)
         messages.success(self.request, f"Perfil de {self.object.nome} atualizado.")
+        avisar_plano(self.request, form)
         return resposta
 
 
@@ -228,7 +239,10 @@ class AlunoPlanoView(AcaoDoAlunoMixin, View):
         if not aluno.plano_ia:
             messages.info(request, "Ligue o Plano com IA em Editar para gerar sugestões.")
             return self.voltar(aluno)
-        aluno.gerar_plano()
+        erro = aluno.gerar_plano()
+        if erro:
+            messages.error(request, f"As sugestões não foram atualizadas. {erro}")
+            return self.voltar(aluno)
         aluno.save(update_fields=["plano_ia_texto", "plano_ia_gerado_em", "atualizado_em"])
         messages.success(request, "Sugestões da IA atualizadas.")
         return self.voltar(aluno)

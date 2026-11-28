@@ -6,7 +6,11 @@
 <div class="pagina pagina--perfil">
   <header class="material-topo">
     <p class="selos">
-      <span class="selo selo--ia">Gerado por IA{% if adaptacao.ia_simulada %} (simulada){% endif %}</span>
+      {% if adaptacao.status == "ERRO" %}
+        <span class="selo selo--atencao">Não gerado</span>
+      {% else %}
+        <span class="selo selo--ia">Gerado por IA{% if adaptacao.ia_simulada %} (simulada){% endif %}</span>
+      {% endif %}
       {% if adaptacao.revisado_em %}
         <span class="selo">Revisado em {{ adaptacao.revisado_em|date:"d/m/Y" }}</span>
       {% elif adaptacao.status != "ERRO" %}
@@ -21,7 +25,15 @@
   </header>
 
   {% if adaptacao.status == "ERRO" %}
-    <p class="aviso aviso--erro">A IA não respondeu nesta versão.{% if e_autor %} Use Refazer para tentar de novo.{% endif %}</p>
+    <p class="aviso aviso--erro" role="alert">
+      A IA não respondeu nesta versão.{% if adaptacao.mensagem_erro %} {{ adaptacao.mensagem_erro }}{% endif %}{% if e_autor %} Use Refazer para tentar de novo.{% endif %}
+    </p>
+  {% else %}
+    {% if adaptacao.ia_leu_so_o_comeco %}
+      <p class="aviso aviso--aviso">O material é longo: a IA adaptou só o começo dele. Para adaptar o resto, envie o trecho seguinte como um novo material.</p>
+    {% endif %}
+  {% endif %}
+  {% if adaptacao.status == "ERRO" %}
   {% elif e_autor %}
     <form method="post" action="{% url 'materiais:adaptacao_salvar' adaptacao.pk %}" class="cartao material-texto">
       {% csrf_token %}
@@ -43,7 +55,7 @@
       {% endif %}
       {% if e_autor %}
         <form method="post" action="{% url 'materiais:adaptacao_refazer' adaptacao.pk %}"
-              data-confirmar="Gerar uma nova versão? Esta versão continua guardada no histórico.">
+              data-confirmar="Gerar uma nova versão? Esta versão continua guardada no histórico." data-aguarde="Gerando…">
           {% csrf_token %}
           <button type="submit" class="botao botao--secundario">Refazer</button>
         </form>
@@ -70,7 +82,7 @@
 
   <p class="perfil-rodape">
     {% if material_visivel %}Material: <a href="{% url 'materiais:detalhe' adaptacao.material.pk %}">{{ adaptacao.material.titulo }}</a>. {% endif %}
-    Gerado em {{ adaptacao.criado_em|date:"d/m/Y \à\s H:i" }}{% if adaptacao.criado_por %} por {{ adaptacao.criado_por.nome }}{% endif %}.
+    {% if adaptacao.status == "ERRO" %}Pedido em{% else %}Gerado em{% endif %} {{ adaptacao.criado_em|date:"d/m/Y \à\s H:i" }}{% if adaptacao.criado_por %} por {{ adaptacao.criado_por.nome }}{% endif %}{% if adaptacao.status != "ERRO" %} com {{ adaptacao.nome_da_ia }}{% endif %}.
     A IA recebeu só o texto do material e o formato, nunca os dados do aluno.
   </p>
 </div>

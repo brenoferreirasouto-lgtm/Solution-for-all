@@ -94,6 +94,8 @@ class Adaptacao(ModeloBase):
     gerado_por = models.CharField(
         "gerado por", max_length=80, default="simulada", help_text='"simulada" ou o nome do modelo de IA.'
     )
+    # Entrega #2: por que a IA não respondeu (limite gratuito, sem internet...). Aparece na tela.
+    mensagem_erro = models.CharField("mensagem de erro", max_length=300, blank=True)
     foi_util = models.BooleanField("foi útil?", null=True, blank=True)
     # Entrega #8: o professor revisa o texto gerado antes de usar (Termos, seção 6).
     revisado_em = models.DateTimeField("revisado em", null=True, blank=True)
@@ -119,6 +121,24 @@ class Adaptacao(ModeloBase):
     @property
     def ia_simulada(self):
         return self.gerado_por == "simulada"
+
+    @property
+    def nome_da_ia(self):
+        """Para as telas: "gpt-oss-120b (Groq)" ou "IA simulada"."""
+        from .services.ia import nome_do_modelo
+
+        return nome_do_modelo(self.gerado_por)
+
+    @property
+    def ia_leu_so_o_comeco(self):
+        """A IA de verdade lê até um limite de caracteres; acima disso, o professor é avisado."""
+        from .services.ia import material_cortado
+
+        return (
+            self.status == self.Status.CONCLUIDA
+            and not self.ia_simulada
+            and material_cortado(self.material.texto_extraido)
+        )
 
     def proxima_versao(self):
         """Número da próxima versão deste material, para este aluno e formato."""
