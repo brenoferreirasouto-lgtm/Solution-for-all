@@ -103,7 +103,7 @@
       <p class="vazio">Desligado.{% if pode_editar %} Ligue em <a href="{% url 'alunos:editar' aluno.pk %}">Editar perfil</a> para a IA sugerir estratégias de apoio.{% endif %}</p>
     {% endif %}
     {% if aluno.plano_ia and pode_editar %}
-      <form method="post" action="{% url 'alunos:plano' aluno.pk %}">
+      <form method="post" action="{% url 'alunos:plano' aluno.pk %}" data-aguarde="Gerando…">
         {% csrf_token %}
         <button class="botao botao--secundario" type="submit">Gerar sugestões de novo</button>
       </form>

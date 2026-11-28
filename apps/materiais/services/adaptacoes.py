@@ -46,8 +46,10 @@ def adaptar(material, aluno, tipo, usuario):
     )
     try:
         resultado = ia.gerar_adaptacao(material.texto_extraido, tipo)
-    except ia.IAIndisponivel:
+    except ia.IAIndisponivel as erro:
         adaptacao.status = Adaptacao.Status.ERRO
+        adaptacao.gerado_por = "groq" if ia.ia_real() else "simulada"
+        adaptacao.mensagem_erro = erro.mensagem[:300]
     else:
         adaptacao.conteudo = resultado.conteudo
         adaptacao.gerado_por = resultado.gerado_por

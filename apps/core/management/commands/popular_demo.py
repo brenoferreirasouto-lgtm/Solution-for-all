@@ -7,6 +7,9 @@ já adaptados.
 
 Pode rodar mais de uma vez: o que já existe é mantido, e só o que estiver
 vazio é preenchido (perfil, plano com IA, data da atenção).
+
+Os materiais e planos de exemplo usam a IA simulada (rápido e sem gastar o
+limite gratuito do Groq). Para gerar com a IA de verdade: --com-ia.
 Nunca use dados de alunos reais aqui (LGPD).
 """
 
@@ -15,6 +18,7 @@ from datetime import time
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
+from django.test.utils import override_settings
 from django.utils import timezone
 
 from apps.alunos.models import Aluno, Necessidade, TipoAdaptacao
@@ -151,9 +155,18 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--senha", default=SENHA_PADRAO, help="Senha dos usuários de demonstração.")
         parser.add_argument("--forcar", action="store_true", help="Roda mesmo com DEBUG=False.")
+        parser.add_argument(
+            "--com-ia", action="store_true", help="Gera planos e adaptações com o Groq em vez da IA simulada."
+        )
+
+    def handle(self, *args, com_ia=False, **options):
+        if com_ia:
+            return self.popular(**options)
+        with override_settings(IA_PROVEDOR="simulada"):
+            return self.popular(**options)
 
     @transaction.atomic
-    def handle(self, *args, senha, forcar, **options):
+    def popular(self, *, senha, forcar, **options):
         if not settings.DEBUG and not forcar:
             raise CommandError("DEBUG=False. Use --forcar se tiver certeza (nunca em produção).")
 
@@ -202,7 +215,9 @@ class Command(BaseCommand):
                     setattr(aluno, campo, valor)
             if plano and not aluno.plano_ia_texto:
                 aluno.plano_ia = True
-                aluno.gerar_plano()
+                erro = aluno.gerar_plano()
+                if erro:
+                    self.stderr.write(f"Plano com IA de {nome} não gerado: {erro}")
             if criado and motivo:
                 aluno.marcar_atencao(motivo, coordenacao)
             elif aluno.precisa_atencao and not aluno.atencao_marcada_em:
@@ -233,10 +248,14 @@ class Command(BaseCommand):
             for nome, formato, versoes, revisada in dados["adaptacoes"]:
                 aluno = Aluno.objects.filter(nome=nome).first()
                 tipo = TipoAdaptacao.objects.get(slug=formato)
-                if not aluno or Adaptacao.objects.filter(material=material, aluno=aluno, tipo=tipo).exists():
+                if not aluno or Adaptacao.objects.filter(
+                    material=material, aluno=aluno, tipo=tipo, status=Adaptacao.Status.CONCLUIDA
+                ).exists():
                     continue
                 for _ in range(versoes):
                     adaptacao = adaptar(material, aluno, tipo, professor)
-                if revisada:
+                if adaptacao.status == Adaptacao.Status.ERRO:
+                    self.stderr.write(f"Adaptação de {material} para {nome} com erro: {adaptacao.mensagem_erro}")
+                elif revisada:
                     adaptacao.revisado_em = timezone.now()
                     adaptacao.save(update_fields=["revisado_em"])

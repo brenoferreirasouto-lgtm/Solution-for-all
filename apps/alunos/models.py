@@ -144,14 +144,23 @@ class Aluno(ModeloBase):
         return any((self.como_aprende, self.dificuldades, self.estrategias, self.observacoes))
 
     def gerar_plano(self):
-        """Preenche as sugestões do Plano com IA. Chame save() depois (o aluno já precisa ter pk)."""
+        """
+        Preenche as sugestões do Plano com IA. Chame save() depois (o aluno já precisa ter pk).
+
+        Devolve "" quando deu certo, ou a mensagem de erro da IA. Se a IA falhar, as
+        sugestões anteriores continuam como estavam (o cadastro nunca deixa de salvar).
+        """
         # Import aqui dentro: o serviço de IA mora em materiais, que depende de alunos.
-        from apps.materiais.services.ia import gerar_plano_apoio
+        from apps.materiais.services.ia import IAIndisponivel, gerar_plano_apoio
 
         # Só itens de catálogo vão para a IA: nunca o nome, o perfil escrito ou as observações.
-        resultado = gerar_plano_apoio(list(self.necessidades.all()), list(self.formatos.all()))
+        try:
+            resultado = gerar_plano_apoio(list(self.necessidades.all()), list(self.formatos.all()))
+        except IAIndisponivel as erro:
+            return erro.mensagem
         self.plano_ia_texto = resultado.conteudo
         self.plano_ia_gerado_em = timezone.now()
+        return ""
 
     def limpar_plano(self):
         self.plano_ia_texto = ""

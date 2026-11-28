@@ -4,7 +4,7 @@ App web para professores adaptarem materiais didáticos com IA para estudantes n
 
 Projeto da cadeira **Projetos 1** (Sistemas de Informação, CESAR School), Grupo 7: Francisco Costa, Matheus Nader, Breno Souto, José Victor e Victor Poggi.
 
-> **Status: entregas 1, 3 a 8 e 10.** O projeto roda, o banco e o login funcionam. A coordenação cadastra a equipe (tela **Equipe**) e a grade de **Horários**; coordenação e núcleo cadastram **Alunos** com perfil cognitivo, sugestões da IA e a lista de quem precisa de atenção. O professor **adapta materiais** (PDF, Word ou texto colado), revisa o texto, ouve, refaz e exporta em PDF ou Word. O menu ☰ (barra lateral no desktop) lista os alunos de quem está logado, com uma lupa que filtra enquanto se digita e uma busca completa em **Alunos** (nome ou turma, e necessidade). A IA ainda é simulada. As demais telas ainda mostram "Em construção" e dizem qual entrega vai construí-las.
+> **Status: entregas 1 a 10 e 12.** O projeto roda, o banco e o login funcionam. A coordenação cadastra a equipe (tela **Equipe**) e a grade de **Horários**; coordenação e núcleo cadastram **Alunos** com perfil cognitivo, sugestões da IA e a lista de quem precisa de atenção. O professor **adapta materiais** (PDF, Word ou texto colado), revisa o texto, ouve, refaz e exporta em PDF ou Word. O menu ☰ (barra lateral no desktop) lista os alunos de quem está logado, com uma lupa que filtra enquanto se digita e uma busca completa em **Alunos** (nome ou turma, e necessidade). A IA é de verdade (Groq) quando há uma chave no `.env`; sem chave, o app usa a IA simulada. As demais telas ainda mostram "Em construção" e dizem qual entrega vai construí-las.
 
 ---
 
@@ -41,6 +41,18 @@ python manage.py runserver
 
 Deixe o terminal aberto, abra <http://127.0.0.1:8000> no navegador e entre com um dos usuários abaixo. Para parar o servidor, aperte `Ctrl + C` no terminal.
 
+### Ligar a IA de verdade (Groq, gratuito)
+
+Sem esta etapa o app funciona com a IA simulada. Para usar a IA de verdade:
+
+1. Crie uma conta gratuita em <https://console.groq.com> (não pede cartão).
+2. Em **API Keys**, clique em **Create API Key** e copie a chave (começa com `gsk_`). Cada pessoa do grupo cria a sua.
+3. No arquivo `.env`, preencha `GROQ_API_KEY=gsk_...`. **Nunca** coloque a chave no código nem no GitHub: o `.env` já fica fora do git.
+4. Confira com `python manage.py testar_ia`. Deve aparecer "IA pronta para usar".
+5. Recomendado (LGPD): em **Settings > Data Controls** no console do Groq, ligue o **Zero Data Retention**.
+
+O plano gratuito tem limite (perto de 30 pedidos por minuto e algumas dezenas de adaptações por dia em cada modelo). Quando o modelo principal (`openai/gpt-oss-120b`) chega no limite, o app usa sozinho o reserva (`openai/gpt-oss-20b`). Se os dois estiverem no limite, a tela mostra o motivo e o botão Refazer. Numa apresentação sem internet, use `IA_PROVEDOR=simulada` no `.env`.
+
 Da próxima vez, basta entrar na pasta, ativar o ambiente (passo 2, só a linha `activate`) e rodar o passo 6. Depois de um `git pull`, rode também `pip install -r requirements.txt` e `python manage.py migrate`: uma entrega pode trazer dependência ou tabela nova (a #7 trouxe o `python-docx`, para ler e gerar arquivos do Word).
 
 ### Usuários de demonstração
@@ -66,8 +78,10 @@ Todos com a senha `solution123`. Os dados são fictícios (os nomes de alunos s�
 | Aplicar migrations | `python manage.py migrate` |
 | Criar um coordenador de verdade | `python manage.py createsuperuser` |
 | Recriar os dados de demonstração | `python manage.py popular_demo` |
+| Testar a chave do Groq | `python manage.py testar_ia` |
+| Dados de demonstração gerados pelo Groq | `python manage.py popular_demo --com-ia` |
 
-Os testes também rodam sozinhos no GitHub (aba **Actions**) a cada push e pull request.
+Os testes também rodam sozinhos no GitHub (aba **Actions**) a cada push e pull request. Os testes nunca acessam a internet nem usam a chave do Groq, mesmo que ela esteja no `.env`: as respostas da IA são simuladas.
 
 ---
 
@@ -81,7 +95,7 @@ Solution-for-all/
 │   ├── contas/          # Usuario (login por e-mail + papel), entrar, sair, recuperar senha
 │   ├── escola/          # Turma, Disciplina, Lecionacao, HorarioAula + telas de equipe e horários
 │   ├── alunos/          # Aluno (perfil cognitivo, plano com IA, atenção), Necessidade, TipoAdaptacao + telas
-│   ├── materiais/       # Material, Adaptacao + services/: ia.py (IA simulada), texto.py (lê PDF/Word/txt), adaptacoes.py
+│   ├── materiais/       # Material, Adaptacao + services/: ia.py (pedidos à IA e IA simulada), groq.py (conexão com o Groq), texto.py (lê PDF/Word/txt), adaptacoes.py
 │   └── painel/          # painel inicial de cada papel
 ├── templates/
 │   ├── base.html
@@ -162,7 +176,7 @@ Nos templates, use sempre o nome da rota (`{% url 'alunos:detalhe' aluno.pk %}`)
 - **Não troque o `AUTH_USER_MODEL`.** O usuário customizado (`contas.Usuario`) já está na primeira migration.
 - **Só dados fictícios.** Necessidades como TEA e TDAH são dados de saúde de crianças (dado sensível pela LGPD).
 - **Termos e Política valem como promessa.** O texto publicado em `/termos/` e `/privacidade/` (em `templates/core/`) descreve o que o app faz hoje. Mudou o comportamento (ex.: passou a guardar logs, ligou uma API de IA, escolheu a hospedagem)? Atualize o texto, a versão e a data em `apps/core/documentos.py`. Os rascunhos originais em PDF estão em `Documents/`.
-- **A IA nunca recebe o nome do aluno.** `apps/materiais/services/ia.py` recebe só o texto do material e o formato (`gerar_adaptacao`) ou só as necessidades e os formatos marcados (Plano com IA, `gerar_plano_apoio`). O perfil escrito pela escola e as observações também não vão para a IA. Hoje a IA é simulada: reorganiza o próprio texto conforme o formato, sem chamar nenhuma API. Para ligar a API gratuita (entrega #2), só o `ia.py` muda; se ela falhar, levante `IAIndisponivel` e a adaptação fica com status Erro. Antes de ligar, atualize a Política (provedor e transferência internacional).
+- **A IA nunca recebe o nome do aluno.** `apps/materiais/services/ia.py` recebe só o texto do material e o formato (`gerar_adaptacao`) ou só as necessidades e os formatos marcados (Plano com IA, `gerar_plano_apoio`). O perfil escrito pela escola e as observações também não vão para a IA. Com `GROQ_API_KEY` no `.env`, os pedidos vão para o Groq (`groq.py`); sem chave, a IA simulada reorganiza o próprio texto. Se o Groq falhar, `IAIndisponivel` leva a mensagem para a tela: a adaptação fica com status Erro e o botão Refazer, e o cadastro do aluno salva mesmo sem o Plano. Trocou de provedor? Atualize a Política (seções 6 a 8).
 - **O professor revisa antes de usar.** Toda adaptação abre com o texto editável e o selo "Ainda não revisado" até ele tocar em Salvar (Termos, seção 6). O botão Ouvir usa a voz do navegador, só com vozes em português instaladas no aparelho, para o texto não sair do computador (sem uma voz dessas, o botão não aparece).
 - **Exportar não leva dados do aluno.** A página de impressão e o arquivo Word têm só o título, o texto e uma nota de que houve IA.
 - **Perfil cognitivo não é prontuário.** Os campos guardam o que a escola observa em sala (como aprende, dificuldades, estratégias). Nada de diagnóstico, CID ou dado de laudo.

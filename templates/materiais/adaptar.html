@@ -46,6 +46,10 @@
       <div class="origem" data-origem="arquivo texto">
         {% include "partials/_campo.html" with campo=form.titulo %}
       </div>
+      <p class="grupo__nota">
+        {% if ia_real %}O texto do material é enviado a um serviço de IA externo (Groq). {% endif %}Não coloque nomes nem dados de alunos no material.
+        {% if ia_real %}A IA lê até {{ limite_ia }} caracteres (cerca de 3 páginas); num material maior, só o começo é adaptado.{% endif %}
+      </p>
     </fieldset>
 
     <fieldset class="grupo passo">
