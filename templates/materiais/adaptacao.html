@@ -82,7 +82,7 @@
 
   <p class="perfil-rodape">
     {% if material_visivel %}Material: <a href="{% url 'materiais:detalhe' adaptacao.material.pk %}">{{ adaptacao.material.titulo }}</a>. {% endif %}
-    Gerado em {{ adaptacao.criado_em|date:"d/m/Y \à\s H:i" }}{% if adaptacao.criado_por %} por {{ adaptacao.criado_por.nome }}{% endif %}{% if adaptacao.status != "ERRO" %} com {{ adaptacao.nome_da_ia }}{% endif %}.
+    {% if adaptacao.status == "ERRO" %}Pedido em{% else %}Gerado em{% endif %} {{ adaptacao.criado_em|date:"d/m/Y \à\s H:i" }}{% if adaptacao.criado_por %} por {{ adaptacao.criado_por.nome }}{% endif %}{% if adaptacao.status != "ERRO" %} com {{ adaptacao.nome_da_ia }}{% endif %}.
     A IA recebeu só o texto do material e o formato, nunca os dados do aluno.
   </p>
 </div>

@@ -310,7 +310,7 @@ class IaRealTests(TestCase):
         with mock.patch.object(groq, "conversar", return_value=resposta_groq("Sugestões de apoio\n\nTEA\n- Rotina")) as chamada:
             resultado = ia.gerar_plano_apoio([tea, tdah], [self.resumo])
         sistema, usuario = chamada.call_args.args
-        self.assertEqual(usuario, "Necessidades: TEA, TDAH\nFormatos de material:\n- Resumo (Só as ideias principais.)")
+        self.assertEqual(usuario, "Necessidades: TEA, TDAH\nFormatos de material:\n- Resumo: Só as ideias principais.")
         self.assertIn("Não faça diagnóstico", sistema)
         self.assertTrue(resultado.conteudo.startswith("Sugestões de apoio\n\nTEA\n• Rotina"))
         self.assertTrue(resultado.conteudo.endswith(ia.FRASE_REVISAO))  # a IA esqueceu; o app põe
@@ -374,6 +374,7 @@ class TelasComIaRealTests(MateriaisBase):
         self.assertContains(resposta, "O material ficou salvo, mas a adaptação não foi gerada")
         self.assertContains(resposta, "Tente de novo em 40 segundos. Use Refazer para tentar de novo.")
         self.assertContains(resposta, "Não gerado")
+        self.assertContains(resposta, "Pedido em")
         self.assertNotContains(resposta, "Gerado por IA")
         self.assertContains(resposta, reverse("materiais:adaptacao_refazer", kwargs={"pk": adaptacao.pk}))
 

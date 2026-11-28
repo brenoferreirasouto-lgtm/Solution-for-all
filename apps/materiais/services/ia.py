@@ -97,7 +97,8 @@ Formato pedido: {formato}
 ESTRUTURA_POR_FORMATO = {
     "simples": (
         "Como montar: na primeira linha, o título do material. Depois, frases curtas (até 15 palavras), uma ideia por "
-        "frase e uma frase por linha. Agrupe as frases do mesmo assunto num bloco. Use palavras do dia a dia."
+        "frase e uma frase por linha, sem tópicos nem números. Agrupe as frases do mesmo assunto num bloco. Use palavras do "
+        "dia a dia."
     ),
     "resumo": (
         'Como montar: a primeira linha é exatamente "Ideias principais". Depois, de 3 a 7 tópicos começando com "• ", '
@@ -107,7 +108,8 @@ ESTRUTURA_POR_FORMATO = {
     "visual": (
         'Como montar: a primeira linha é exatamente "Esquema em passos". Depois, de 4 a 10 passos numerados '
         '("1. ", "2. "...), cada um curto, na ordem em que as coisas acontecem ou devem ser entendidas. Use "→" para '
-        "mostrar causa e consequência dentro de um passo."
+        "mostrar causa e consequência dentro de um passo. Não acrescente etapas, nomes ou termos que não estão no "
+        "material."
     ),
     "audio": (
         'Como montar: o texto será lido em voz alta por uma voz sintetizada. Comece com "Ouça com atenção." e termine '
@@ -129,7 +131,7 @@ def _adaptar_com_groq(texto, tipo):
         estrutura=ESTRUTURA_POR_FORMATO.get(slug, ESTRUTURA_POR_FORMATO["simples"]),
     )
     usuario = f"<material>\n{material}\n</material>"
-    resposta = _pedir(sistema, usuario, max_tokens=3000, temperatura=0.5)
+    resposta = _pedir(sistema, usuario, max_tokens=3000, temperatura=0.3)
     conteudo = limpar_resposta(resposta.texto)
     if not conteudo:
         raise IAIndisponivel("A IA não devolveu texto desta vez. Tente de novo.")
@@ -334,14 +336,16 @@ de 2 a 4 tópicos com uma estratégia concreta cada um, em até 25 palavras;
 - se houver formatos: um bloco com a linha "Formatos recomendados para os materiais" e um tópico por formato \
 dizendo como usar aquele formato com a turma;
 - última linha, exatamente: {revisao}
-4. Responda só com esse texto, sem apresentação nem comentários."""
+4. Escreva tudo em português, sem palavras em inglês. No bloco de formatos, cada tópico começa com "• ", o nome \
+do formato e dois-pontos.
+5. Responda só com esse texto, sem apresentação nem comentários."""
 
 
 def _plano_com_groq(necessidades, formatos):
     linhas = ["Necessidades: " + (", ".join(n.nome for n in necessidades) or "nenhuma marcada")]
     if formatos:
         linhas.append("Formatos de material:")
-        linhas += [f"- {f.nome}" + (f" ({f.descricao})" if f.descricao else "") for f in formatos]
+        linhas += [f"- {f.nome}" + (f": {f.descricao}" if f.descricao else "") for f in formatos]
     resposta = _pedir(
         SISTEMA_PLANO.format(revisao=FRASE_REVISAO), "\n".join(linhas), max_tokens=1500, temperatura=0.4
     )
